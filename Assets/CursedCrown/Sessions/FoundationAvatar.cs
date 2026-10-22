@@ -1,0 +1,104 @@
+using Unity.Netcode;
+using UnityEngine;
+
+namespace CursedCrown
+{
+    public struct AvatarPose : INetworkSerializable, System.IEquatable<AvatarPose>
+    {
+        public Vector3 Head, Left, Right;
+        public Quaternion HeadRotation, LeftRotation, RightRotation;
+        public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
+        {
+            s.SerializeValue(ref Head); s.SerializeValue(ref Left); s.SerializeValue(ref Right);
+            s.SerializeValue(ref HeadRotation); s.SerializeValue(ref LeftRotation); s.SerializeValue(ref RightRotation);
+        }
+        public bool Equals(AvatarPose p) => Head == p.Head && Left == p.Left && Right == p.Right &&
+            HeadRotation == p.HeadRotation && LeftRotation == p.LeftRotation && RightRotation == p.RightRotation;
+        public bool IsValid() => ValidVector(Head) && ValidVector(Left) && ValidVector(Right) &&
+            ValidRotation(HeadRotation) && ValidRotation(LeftRotation) && ValidRotation(RightRotation) &&
+            Head.y >= .1f && Head.y <= 2.6f && new Vector2(Head.x, Head.z).magnitude <= 2f &&
+            Vector3.Distance(Left, Head) <= 1.8f && Vector3.Distance(Right, Head) <= 1.8f;
+        static bool ValidVector(Vector3 p) => Finite(p.x) && Finite(p.y) && Finite(p.z);
+        static bool ValidRotation(Quaternion q) => Finite(q.x) && Finite(q.y) && Finite(q.z) && Finite(q.w) &&
+            Quaternion.Dot(q,q) > .9f && Quaternion.Dot(q,q) < 1.1f;
+        static bool Finite(float f) => !float.IsNaN(f) && !float.IsInfinity(f);
+    }
+
+    public sealed class FoundationAvatar : NetworkBehaviour
+    {
+        public Transform Head, LeftHand, RightHand, Body;
+        public NetworkVariable<Vector3> RootPosition = new();
+        public NetworkVariable<Quaternion> RootRotation = new(Quaternion.identity);
+        public NetworkVariable<AvatarPose> TrackedPose = new();
+        double nextHostPose;
+        float nextSend;
+        Renderer[] headRenderers, bodyRenderers;
+        readonly System.Collections.Generic.List<Material> ownedMaterials = new();
+        public override void OnNetworkSpawn()
+        {
+            if (IsServer)
+            {
+                var spawn = FoundationSession.Instance.AssignSpawn(OwnerClientId);
+                RootPosition.Value = spawn.position; RootRotation.Value = spawn.rotation;
+                TrackedPose.Value = new AvatarPose { Head = Vector3.up * 1.65f, Left = new Vector3(-.25f,1.2f,.35f),
+                    Right = new Vector3(.25f,1.2f,.35f), HeadRotation = Quaternion.identity,
+                    LeftRotation = Quaternion.identity, RightRotation = Quaternion.identity };
+            }
+            headRenderers = Head.GetComponentsInChildren<Renderer>();
+            bodyRenderers = Body.GetComponentsInChildren<Renderer>();
+            foreach (var r in GetComponentsInChildren<Renderer>())
+            {
+                var material = r.material; ownedMaterials.Add(material);
+                material.color = Color.HSVToRGB((OwnerClientId * .21f + .52f) % 1f, .65f, .9f);
+            }
+            if (IsOwner)
+            {
+                foreach (var r in headRenderers) r.enabled = false;
+                foreach (var r in bodyRenderers) r.enabled = false;
+            }
+        }
+        void LateUpdate()
+        {
+            if (!IsSpawned) return;
+            transform.SetPositionAndRotation(RootPosition.Value, RootRotation.Value);
+            var rig = FoundationRig.Instance;
+            AvatarPose pose = TrackedPose.Value;
+            if (IsOwner && rig != null)
+            {
+                rig.transform.SetPositionAndRotation(RootPosition.Value, RootRotation.Value);
+                pose = rig.ReadPose();
+                if (Time.unscaledTime >= nextSend && pose.IsValid())
+                {
+                    nextSend = Time.unscaledTime + .05f;
+                    SubmitPoseRpc(pose);
+                }
+            }
+            Apply(Head, pose.Head, pose.HeadRotation, IsOwner);
+            Apply(LeftHand, pose.Left, pose.LeftRotation, IsOwner);
+            Apply(RightHand, pose.Right, pose.RightRotation, IsOwner);
+            Body.localPosition = new Vector3(pose.Head.x, Mathf.Max(.35f,pose.Head.y*.48f),pose.Head.z);
+            Body.localRotation = Quaternion.Euler(0,pose.HeadRotation.eulerAngles.y,0);
+        }
+        public override void OnDestroy()
+        {
+            foreach(var material in ownedMaterials)if(material!=null)Destroy(material);
+            base.OnDestroy();
+        }
+        static void Apply(Transform target,Vector3 position,Quaternion rotation,bool immediate)
+        {
+            float t=immediate?1f:1f-Mathf.Exp(-20f*Time.unscaledDeltaTime);
+            target.localPosition=Vector3.Lerp(target.localPosition,position,t);
+            target.localRotation=Quaternion.Slerp(target.localRotation,rotation,t);
+        }
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner, Delivery = RpcDelivery.Unreliable)]
+        void SubmitPoseRpc(AvatarPose pose, RpcParams rpcParams = default)
+        {
+            // Default RPC ownership + explicit sender check. Root placement remains host owned.
+            if (rpcParams.Receive.SenderClientId != OwnerClientId || !pose.IsValid()) return;
+            double now = NetworkManager.ServerTime.Time;
+            if (now < nextHostPose) return;
+            nextHostPose = now + .025;
+            TrackedPose.Value = pose;
+        }
+    }
+}

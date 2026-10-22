@@ -1,39 +1,31 @@
-# Setup status - 21 October 2026
+# Setup status — 22 October 2026
 
-## Confirmed
+## Verified foundation
 
-- Inspected local Unity installation and VR Assignment 2 project.
-- Editor: 6000.6.2f1, revision 770e33f6875c. Android Build Support is installed.
-- Existing course manifest: XRI 3.6.1, OpenXR 1.18.0, XR Management 4.7.0, Input System 1.20.0, URP 17.6.0.
-- Private GitHub repository created under Rana-Ezzeddine/cursed-crown-vr. No public license added.
-- Reused lean XR and URP settings with their actual asset GUIDs. Removed old cloud project association, local tutorial state and Unity Connect preferences; cleared unused inherited credential fields. Enabled XR loader automatic initialization in the starter copy.
-- Added rule constants, draft system contracts, a local tracked preview rig, an editor arena generator and team documents.
-- Configured visible .meta files and force-text serialization. Kept original Assignment 2 unchanged.
+- Normal Unity Editor 6000.6.2f1 (770e33f6875c) imported and compiled the project on macOS.
+- Package Manager resolved NGO 2.13.2, Multiplayer Services 2.3.2 and Transport 6.6.0, with the retained course XR/URP packages. These replace the earlier unverified NGO 2.7.0 / MPS 1.2.0 suggestions.
+- Generated and saved Arena.unity, FoundationPlayer.prefab, persistent materials and five personal sandbox scenes with real Unity metadata.
+- Scene/prefab wiring and pose-validation checks passed; desktop Play Mode rendering was visually inspected.
+- A macOS Mono development player built successfully. Automated separate-process tests passed with five participants, rejection of an extra client, distinct initial spawns, valid replicated poses and observed remote movement.
+- Client departure was observed by the host. A separate two-process test verified that host departure ended the client's session. All eight reported processes recorded zero runtime errors.
+- Final results and source hashes are recorded in VALIDATION_RESULTS.json. Raw logs are excluded because Unity/service logs may contain account tokens.
 
-## Validation attempted
+The earlier sandboxed batch import could not open the Package Manager IPC socket. Verification was completed through a normal native Unity Editor session instead.
 
-A batch Unity import/compile was attempted. Unity exited before compilation because this execution environment denied the Package Manager's local IPC socket:
+## Configuration and scope
 
-`listen EPERM: operation not permitted /tmp/Unity-Upm-73018.sock`
+Android: OpenXR automatic startup enabled; Quest 2/3 enabled; ARM64, IL2CPP, minimum API 32, target API 34. Mac desktop XR automatic startup is disabled for pose simulation. The starter reuses lean XR/URP settings from Rana's course project; the original project remains unchanged. Inherited cloud association and unused credential fields are cleared. No paid plan is enabled.
 
-This does not establish whether the starter compiles. The scene generator has not executed successfully; Arena.unity and its materials must be generated in an unrestricted normal Unity Editor session. No APK or headset test was performed. The baseline lockfile is copied from the resolved course project, not newly resolved for this starter.
+LAN transport and authority/pose foundations are implemented. Relay DTLS host/join and a controller code keypad are implemented but have not been exercised against a linked services project. No host migration is provided. Teleport, weapons, health, respawn, crown gameplay and match flow remain team work.
 
-## Networking installation - pending
+## Pending real-device gates
 
-Unity's official documentation lists Netcode for GameObjects 2.7.0 and Multiplayer Services 1.2.0 for Unity 6. These are candidate exact versions to resolve and test, not a verified installed combination for this starter. The manifest deliberately retains the existing resolved baseline until a normal Package Manager session can install and resolve the new dependencies.
+- Link a suitable Unity services project and verify service access/usage before Relay testing.
+- Run Android XR Project Validation; build and install an APK.
+- Verify controller interaction, tracking origins, menus and avatars on physical Quest 2 + Quest 3.
+- Test the intended university Wi-Fi, including device isolation/firewall behavior.
+- Run five-headset testing and profile Quest 2 once gameplay is integrated.
 
-1. In a normal Editor session, install com.unity.netcode.gameobjects 2.7.0 and com.unity.services.multiplayer 1.2.0 from the Unity registry.
-2. Let Unity resolve the compatible Transport and Authentication dependencies; inspect their exact versions.
-3. Compile, review XR Project Validation, and commit BOTH manifest.json and the real updated packages-lock.json.
-4. Use the unified Multiplayer Services SDK rather than the deprecated standalone Relay package for Unity 6.
-5. Link a separate appropriate Unity services project before Relay testing. No paid services or billing changes have been authorized or enabled.
-6. Person 1 implements five-player connection approval, host/join UI and networked player prefab.
+Desktop loopback tests establish local transport behavior; they do not establish headset performance or university-network compatibility. Unity emitted an XR shutdown warning on the Mac without an initialized XR manager; no desktop-player runtime errors were reported.
 
-References:
-- https://docs.unity.com/en-us/mps-sdk/tutorials/relay-and-ngo
-- https://docs.unity3d.com/6000.0/Documentation/Manual/com.unity.netcode.gameobjects.html
-- https://docs.unity3d.com/6000.0/Documentation/Manual/com.unity.services.multiplayer.html
-
-## Inputs still needed
-
-Verified teammate GitHub usernames, final role assignments, and the announced deadline (when available). Headsets must be physically available for runtime validation. These do not block reviewing the prepared source and dividing initial work.
+Verified teammate usernames, final person-to-role assignments and the announced deadline are still needed. These do not block parallel feature development.
