@@ -11,13 +11,15 @@ namespace CursedCrown
         {
             public string mode, status;
             public bool connected, rejected, sessionEnded, validPoses=true, uniqueSpawns=true;
-            public int peakPlayers, joinedEvents, leftEvents, errors;
+            public int peakPlayers, joinedEvents, leftEvents, errors, connections;
             public float remoteMotion;
         }
         Result result;
         string path;
         float started,exitAfter;
         bool active,launched;
+        bool reconnectRequested, reconnectStarted;
+        float reconnectAfter, reconnectDelay;
         FoundationSession session;
         readonly System.Collections.Generic.Dictionary<ulong,Vector3> previousRemote=new();
         string Arg(string name,string fallback="")
@@ -35,7 +37,9 @@ namespace CursedCrown
             exitAfter=float.TryParse(Arg("-ccExitAfter","25"),out var seconds)?seconds:25;
             session=GetComponent<FoundationSession>();
             session.Port=ushort.Parse(Arg("-ccPort","17877"));session.Address="127.0.0.1";
-            session.PlayerJoined+=_=>result.joinedEvents++;
+            float.TryParse(Arg("-ccReconnectAfter","0"),out reconnectAfter);
+            float.TryParse(Arg("-ccReconnectDelay","3"),out reconnectDelay);
+            session.PlayerJoined+=id=>{result.joinedEvents++;if(id==session.Manager.LocalClientId)result.connections++;};
             session.PlayerLeft+=_=>result.leftEvents++;
             session.SessionEnded+=_=>result.sessionEnded=true;
             Application.logMessageReceived+=Log;
@@ -51,6 +55,11 @@ namespace CursedCrown
             result.peakPlayers=Mathf.Max(result.peakPlayers,session.PlayerCount);
             result.status=session.Status;
             result.rejected|=session.Status.Contains("Session full",StringComparison.OrdinalIgnoreCase);
+            float elapsed=Time.realtimeSinceStartup-started;
+            if(reconnectAfter>0&&!reconnectRequested&&elapsed>=reconnectAfter)
+            {reconnectRequested=true;session.Leave();}
+            if(reconnectRequested&&!reconnectStarted&&elapsed>=reconnectAfter+reconnectDelay&&session.CanStart)
+            {reconnectStarted=true;session.StartLan(false);previousRemote.Clear();}
             var avatars=FindObjectsByType<FoundationAvatar>(FindObjectsSortMode.None);
             for(int i=0;i<avatars.Length;i++)
             {

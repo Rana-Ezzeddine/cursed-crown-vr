@@ -11,6 +11,9 @@
 .idea/
 .vscode/
 *.csproj
+!Tests/Member1/Member1.Tests.csproj
+Tests/**/bin/
+Tests/**/obj/
 *.sln
 *.slnx
 *.user

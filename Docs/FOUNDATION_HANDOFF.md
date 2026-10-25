@@ -8,12 +8,12 @@ The foundation contains one scene-local camera/tracking rig and a host-authorita
 2. Open the root in Unity Hub using Editor 6000.6.2f1 (770e33f6875c).
 3. Let Package Manager resolve the committed manifest and lockfile. Do not upgrade packages independently.
 4. Open Assets/CursedCrown/Scenes/Arena.unity. If it has not been generated, use Cursed Crown > 1 - Generate Foundation.
-5. Press Play. Host LAN starts a session on UDP 7777. A second desktop player joins using 127.0.0.1 on the same computer, or the host's LAN IPv4 address on another computer.
+5. Press Play. Host LAN starts a session on UDP 7777. A second desktop player joins using 127.0.0.1 on the same computer, or the host's LAN IPv4 address on another computer. See MEMBER1_START_HERE.md for the new branch's full controls and pending checks.
 6. Host Relay / Join code use the unified Multiplayer Services SDK. They require a suitable linked Unity services project and service access. The foundation does not enable a paid plan. Relay DTLS forwards traffic; the host still owns gameplay decisions.
 
 Desktop simulation: hold the right mouse button and use WASD to offset your head within the local play area; Q/E turns your simulated head. This verifies avatar pose replication. It is not teleportation or gameplay locomotion.
 
-VR: the camera and controllers use tracked poses. Aim the right controller at the lobby tiles and press the trigger. The world-space code keypad permits Relay joining without a desktop keyboard. The panel stays at a fixed offset from your virtual root rather than being attached to your head. Quest boundaries remain enabled.
+VR: the camera and controllers use tracked poses. Aim the right controller at the lobby tiles and press the trigger. The world-space keypad supports Relay codes and LAN IPv4 addresses without a desktop keyboard. The panel hides after connection; B on the right controller reopens/closes it. The panel stays at a fixed offset from your virtual root rather than being attached to your head. Quest boundaries remain enabled. Verify these updated controls on hardware before calling them supported.
 
 ## Personal sandboxes
 
@@ -44,8 +44,8 @@ Every person implements networking for their own system. Start with mocks when a
 ## Validation commands
 
 - Cursed Crown > 2 - Validate Foundation checks scene wiring, one local camera/listener/rig, required scripts and player prefab registration.
-- Cursed Crown > 3 - Build Desktop Test Player produces Builds/CursedCrownTest.app on macOS.
-- Cursed Crown > 4 - Run Local Six-Process Network Checks runs a host, four accepted clients and a rejected extra client; checks pose replication, distinct spawns and a client departure; then runs a separate host-departure check.
+- Cursed Crown > 3 - Build Desktop Test Player produces a test player for the Editor's OS: Builds/Windows/CursedCrownTest.exe, Builds/CursedCrownTest.app on macOS, or Builds/Linux/CursedCrownTest.x86_64.
+- Cursed Crown > 4 - Run Local Six-Process Network Checks runs a host, four accepted clients and a rejected extra client; checks pose replication, distinct spawns and a client departure; then runs separate host-departure and late-join/reconnect stages (ten processes total). This updated suite must be rerun; historical main-branch results do not certify it.
 - Cursed Crown > Run All Foundation Checks validates, builds and runs those checks; it generates the foundation only if the Arena scene is missing.
 
 The tests write per-process JSON plus a summary under the OS temporary directory; the Editor Console prints the report location. Raw service/authentication logs must not be committed. Record verified results in SETUP_STATUS.md and TEST_MATRIX.md.

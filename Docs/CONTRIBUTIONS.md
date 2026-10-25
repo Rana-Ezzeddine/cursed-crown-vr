@@ -8,7 +8,7 @@ Version selection used the installed Unity 6000.6.2f1 manual. Relay integration 
 
 | Member | Original work | Reused sources/licenses | AI assistance + verification | Relevant PRs |
 |---|---|---|---|---|
-| Person 1 | Pending | Pending | Pending | Pending |
+| Person 1 (Carla) | Session/lobby extension prepared for review; Carla's explanation, adaptation and Unity/device verification pending | Existing team foundation and Unity SDKs | Codex wrote lifecycle/menu/avatar/test changes and beginner guide; standalone logic checks passed; actual Unity/Relay/Quest tests pending. Do not claim unaided authorship. | Member 1 draft PR |
 | Person 2 | Pending | Pending | Pending | Pending |
 | Person 3 | Pending | Pending | Pending | Pending |
 | Person 4 | Pending | Pending | Pending | Pending |
