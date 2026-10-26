@@ -14,6 +14,8 @@ Five-player full-VR laser tag for CMPS297AG, targeting Meta Quest 2 and Quest 3.
 
 Read [FOUNDATION_HANDOFF.md](Docs/FOUNDATION_HANDOFF.md) for controls, architecture, services setup, five-person integration points and validation commands. Read [FIRST_TASKS.md](Docs/FIRST_TASKS.md) for ownership and milestones.
 
+Member 1: use [MEMBER1_START_HERE.md](Docs/MEMBER1_START_HERE.md) for the beginner walkthrough and [MEMBER1_VALIDATION.md](Docs/MEMBER1_VALIDATION.md) for this branch's verification limits. Session/lobby improvements and Windows/macOS/Linux test-build support are implemented for review; Unity compilation, the updated desktop network suite, Relay and headset validation are still pending for these changes.
+
 ## Included
 
 - Saved arena, five covers and spawn markers, pedestal and crown visual placeholder.

@@ -13,12 +13,27 @@ namespace CursedCrown
         public Transform Head, LeftHand, RightHand;
         public bool AutomatedMotion;
         public bool IsTracked { get; private set; }
+        public bool HasHeadset { get; private set; }
         public bool TriggerPressed { get; private set; }
+        public bool MenuPressed { get; private set; }
         readonly List<XRInputSubsystem> subsystems = new();
-        bool lastTrigger, floorOrigin;
+        bool lastTrigger, lastMenu, floorOrigin;
         float retryOrigin, desktopYaw;
         Vector3 desktopOffset;
-        void Awake() { Instance = this; }
+        Vector3 lobbyPosition;
+        Quaternion lobbyRotation;
+        void Awake()
+        {
+            Instance = this;
+            lobbyPosition = transform.position;
+            lobbyRotation = transform.rotation;
+        }
+        public void ResetToLobby()
+        {
+            transform.SetPositionAndRotation(lobbyPosition, lobbyRotation);
+            desktopOffset = Vector3.zero;
+            desktopYaw = 0;
+        }
         void Update()
         {
             if (Time.unscaledTime >= retryOrigin)
@@ -29,16 +44,18 @@ namespace CursedCrown
                     if (sub.running) floorOrigin = sub.TrySetTrackingOriginMode(TrackingOriginModeFlags.Floor);
             }
             var head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
+            HasHeadset = head.isValid;
             IsTracked = head.isValid && head.TryGetFeatureValue(UnityEngine.XR.CommonUsages.isTracked, out var tracked) && tracked;
-            bool trigger = false;
+            bool trigger = false, menu = false;
             if (IsTracked)
             {
                 Track(XRNode.Head,Head);
                 Track(XRNode.LeftHand,LeftHand);
                 Track(XRNode.RightHand,RightHand);
                 InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton,out trigger);
+                InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(UnityEngine.XR.CommonUsages.secondaryButton,out menu);
             }
-            else
+            else if (!HasHeadset)
             {
                 if(AutomatedMotion)desktopOffset=new Vector3(Mathf.Sin(Time.unscaledTime*2)*.3f,0,0);
                 var keyboard = Keyboard.current;
@@ -56,6 +73,7 @@ namespace CursedCrown
                 LeftHand.localRotation=RightHand.localRotation=Head.localRotation;
             }
             TriggerPressed=trigger&&!lastTrigger;lastTrigger=trigger;
+            MenuPressed=menu&&!lastMenu;lastMenu=menu;
         }
         void Track(XRNode node,Transform target)
         {

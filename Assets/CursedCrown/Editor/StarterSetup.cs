@@ -107,6 +107,8 @@ namespace CursedCrown.Editor
         [MenuItem("Cursed Crown/2 - Validate Foundation")]
         public static void Validate()
         {
+            if(!Application.isBatchMode&&!FoundationAutomation.Running&&!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                throw new OperationCanceledException("Validation cancelled to preserve scene edits.");
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(PlayerPath);
             if(prefab==null||prefab.GetComponent<NetworkObject>()==null||prefab.GetComponent<FoundationAvatar>()==null)
                 throw new InvalidOperationException("Missing network player prefab or required components.");
@@ -132,10 +134,10 @@ namespace CursedCrown.Editor
         [MenuItem("Cursed Crown/3 - Build Desktop Test Player")]
         public static void BuildDesktop()
         {
-            Validate();Directory.CreateDirectory("Builds");
+            Validate();Directory.CreateDirectory(Path.GetDirectoryName(DesktopTestPlayer.BuildPath));
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone,ScriptingImplementation.Mono2x);
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},
-                locationPathName="Builds/CursedCrownTest.app",target=BuildTarget.StandaloneOSX,
+                locationPathName=DesktopTestPlayer.BuildPath,target=DesktopTestPlayer.Target,
                 options=BuildOptions.Development});
             if(report.summary.result!=BuildResult.Succeeded)throw new InvalidOperationException("Desktop build failed: "+report.summary.result);
             Debug.Log("CC_DESKTOP_BUILD_PASS");

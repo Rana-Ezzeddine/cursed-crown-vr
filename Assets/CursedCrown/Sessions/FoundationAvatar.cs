@@ -36,6 +36,8 @@ namespace CursedCrown
         readonly System.Collections.Generic.List<Material> ownedMaterials = new();
         public override void OnNetworkSpawn()
         {
+            nextHostPose = 0;
+            nextSend = 0;
             if (IsServer)
             {
                 var spawn = FoundationSession.Instance.AssignSpawn(OwnerClientId);
@@ -56,6 +58,15 @@ namespace CursedCrown
                 foreach (var r in headRenderers) r.enabled = false;
                 foreach (var r in bodyRenderers) r.enabled = false;
             }
+            transform.SetPositionAndRotation(RootPosition.Value, RootRotation.Value);
+            var pose = TrackedPose.Value;
+            if (pose.IsValid()) ApplyVisuals(pose, true);
+            FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
+        }
+        public override void OnNetworkDespawn()
+        {
+            FoundationSession.Instance?.UnregisterAvatar(OwnerClientId);
+            base.OnNetworkDespawn();
         }
         void LateUpdate()
         {
@@ -66,18 +77,25 @@ namespace CursedCrown
             if (IsOwner && rig != null)
             {
                 rig.transform.SetPositionAndRotation(RootPosition.Value, RootRotation.Value);
-                pose = rig.ReadPose();
-                if (Time.unscaledTime >= nextSend && pose.IsValid())
+                // Freeze the last valid pose when a headset temporarily loses tracking.
+                var input = rig.ReadPose();
+                bool inputReady = (!rig.HasHeadset || rig.IsTracked) && input.IsValid();
+                if (inputReady) pose = input;
+                if (inputReady && Time.unscaledTime >= nextSend)
                 {
                     nextSend = Time.unscaledTime + .05f;
                     SubmitPoseRpc(pose);
                 }
             }
-            Apply(Head, pose.Head, pose.HeadRotation, IsOwner);
-            Apply(LeftHand, pose.Left, pose.LeftRotation, IsOwner);
-            Apply(RightHand, pose.Right, pose.RightRotation, IsOwner);
-            Body.localPosition = new Vector3(pose.Head.x, Mathf.Max(.35f,pose.Head.y*.48f),pose.Head.z);
-            Body.localRotation = Quaternion.Euler(0,pose.HeadRotation.eulerAngles.y,0);
+            if (pose.IsValid()) ApplyVisuals(pose, IsOwner);
+        }
+        void ApplyVisuals(AvatarPose pose, bool immediate)
+        {
+            Apply(Head, pose.Head, pose.HeadRotation, immediate);
+            Apply(LeftHand, pose.Left, pose.LeftRotation, immediate);
+            Apply(RightHand, pose.Right, pose.RightRotation, immediate);
+            Apply(Body, new Vector3(pose.Head.x, Mathf.Max(.35f,pose.Head.y*.48f),pose.Head.z),
+                Quaternion.Euler(0,pose.HeadRotation.eulerAngles.y,0), immediate);
         }
         public override void OnDestroy()
         {
