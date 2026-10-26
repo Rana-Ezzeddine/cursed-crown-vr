@@ -33,13 +33,24 @@ Use Cursed Crown > Member 1 > Check Inputs and Pose Guards first.
 
 Then select Cursed Crown > Run All Foundation Checks (build + network). It builds a desktop player appropriate for the operating system running the Editor: Windows x64, macOS or Linux x64. Install matching desktop build support if Unity requests it. The command validates the common Arena and may ask you to save current scene edits.
 
-The suite launches ten processes over three stages:
+The suite launches ten processes over three stages, waiting for reports rather than assuming startup takes a fixed number of seconds:
 
-1. Host plus four clients; reject a sixth participant; inspect distinct spawns and remote poses; observe a client leaving.
+1. Start the host, then connect each of four clients in sequence. Confirm all five rosters and remote poses before launching the sixth participant. Keep the first five alive until the sixth is rejected, then request one client to leave and observe the freed place.
 2. Host departure; the remaining client must end its session.
 3. A client joins an already-running host, leaves, and rejoins without restarting the executable. It must receive a fresh avatar and valid roster/poses.
 
-It takes about two minutes. The Console prints the temporary report folder. `summary.txt` reports assertions; a missing report is a failure. Logs can contain SDK account data, so do not commit raw logs. The binaries are under Builds/ and are ignored by Git.
+Allow several minutes, especially on a busy laptop. Each readiness step has a 90-second deadline and each stage has a six-minute upper bound. Use Cursed Crown > Cancel Running Network Checks to cancel. The Console prints the temporary report folder. Players save progress every half-second and final reports after shutdown; `summary.txt` distinguishes a process that never started reporting, one still running and one that exited. Final reports are required to pass. Logs can contain SDK account data, so do not commit raw logs. The binaries are under Builds/ and are ignored by Git.
+
+### Updating an existing ZIP download after the test-runner fix
+
+GitHub ZIP copies do not update themselves. Close the Unity Editor, download the current `feature/p1-sessions` ZIP from Code > Download ZIP and extract it into a new folder. Either add/open that new project root in Unity Hub, or copy the following files into the corresponding locations of your existing project and replace the two existing scripts:
+
+- `Assets/CursedCrown/Editor/FoundationChecks.cs`
+- `Assets/CursedCrown/Sessions/FoundationSmokeProbe.cs`
+- `Assets/CursedCrown/Sessions/SmokeTestPlan.cs`
+- `Assets/CursedCrown/Sessions/SmokeTestPlan.cs.meta`
+
+Keep the existing `.meta` files for the two replaced scripts. Reopen the project and run **Run All Foundation Checks (build + network)** so the executable is rebuilt. Console startup must say `CC_NETWORK_CHECKS_STARTED v2`. Running the checks-only menu with an old executable will fail its report-version check.
 
 These checks are LAN loopback tests. They do not establish actual Wi-Fi, Relay or headset compatibility.
 

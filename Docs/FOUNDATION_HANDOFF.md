@@ -45,7 +45,7 @@ Every person implements networking for their own system. Start with mocks when a
 
 - Cursed Crown > 2 - Validate Foundation checks scene wiring, one local camera/listener/rig, required scripts and player prefab registration.
 - Cursed Crown > 3 - Build Desktop Test Player produces a test player for the Editor's OS: Builds/Windows/CursedCrownTest.exe, Builds/CursedCrownTest.app on macOS, or Builds/Linux/CursedCrownTest.x86_64.
-- Cursed Crown > 4 - Run Local Six-Process Network Checks runs a host, four accepted clients and a rejected extra client; checks pose replication, distinct spawns and a client departure; then runs separate host-departure and late-join/reconnect stages (ten processes total). This updated suite must be rerun; historical main-branch results do not certify it.
+- Cursed Crown > 4 - Run Local Six-Process Network Checks runs a host, four accepted clients and a rejected extra client; checks pose replication, distinct spawns and a client departure; then runs separate host-departure and late-join/reconnect stages (ten processes total). The v2 runner waits for confirmed readiness, holds five live players during the sixth-player rejection check, and collects progress plus final reports. Each step has a 90-second deadline. This updated suite must be rerun; historical main-branch results do not certify it.
 - Cursed Crown > Run All Foundation Checks validates, builds and runs those checks; it generates the foundation only if the Arena scene is missing.
 
 The tests write per-process JSON plus a summary under the OS temporary directory; the Editor Console prints the report location. Raw service/authentication logs must not be committed. Record verified results in SETUP_STATUS.md and TEST_MATRIX.md.

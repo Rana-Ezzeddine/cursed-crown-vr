@@ -191,7 +191,8 @@ static class SessionTests
             f.Session.StartRelay(true); f.StopFinished();
             Assert(!f.Session.Status.Contains("secret-token") && !Debug.LastWarning.Contains("secret-token"), "secret leaked");
         });
-        Console.WriteLine(passed + " session logic tests passed. Unity/NGO/Relay/headset integration still requires Unity.");
+        int runnerTests = SmokePlanTests.RunAll();
+        Console.WriteLine(passed + " session logic tests and " + runnerTests + " runner regression tests passed. Unity/NGO/Relay/headset integration still requires Unity.");
         return 0;
     }
 }

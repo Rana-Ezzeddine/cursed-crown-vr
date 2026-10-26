@@ -10,7 +10,9 @@
     <Compile Include="../../Assets/CursedCrown/Core/GameRules.cs" Link="GameRules.cs" />
     <Compile Include="../../Assets/CursedCrown/Sessions/SessionInput.cs" Link="SessionInput.cs" />
     <Compile Include="../../Assets/CursedCrown/Sessions/FoundationSession.cs" Link="FoundationSession.cs" />
+    <Compile Include="../../Assets/CursedCrown/Sessions/SmokeTestPlan.cs" Link="SmokeTestPlan.cs" />
     <Compile Include="TestDoubles.cs" />
     <Compile Include="SessionTests.cs" />
+    <Compile Include="SmokePlanTests.cs" />
   </ItemGroup>
 </Project>
