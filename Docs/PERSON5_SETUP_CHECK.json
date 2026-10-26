@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-26",
+  "branch": "feature/person5-crown-match",
+  "sourceFilesMatchingPreviousBuild": 20,
+  "binaryHashMatchesPreviousBuild": true,
+  "freshCloneCompilation": "BLOCKED: Unity package resolution stalled; offline attempt lacked package assemblies",
+  "testBinary": "Previously verified foundation build, not a fresh build of this clone",
+  "results": {
+    "client_departure": {
+      "passed": true,
+      "host": {
+        "mode": "host",
+        "status": "Hosting LAN on port 19877",
+        "connected": true,
+        "rejected": false,
+        "sessionEnded": false,
+        "validPoses": true,
+        "uniqueSpawns": true,
+        "peakPlayers": 2,
+        "joinedEvents": 2,
+        "leftEvents": 1,
+        "errors": 0,
+        "remoteMotion": 0.26452916860580444
+      },
+      "client": {
+        "mode": "client",
+        "status": "Connected to host.",
+        "connected": true,
+        "rejected": false,
+        "sessionEnded": false,
+        "validPoses": true,
+        "uniqueSpawns": true,
+        "peakPlayers": 2,
+        "joinedEvents": 1,
+        "leftEvents": 0,
+        "errors": 0,
+        "remoteMotion": 0.04104580357670784
+      }
+    },
+    "host_departure": {
+      "passed": true,
+      "host": {
+        "mode": "host",
+        "status": "Hosting LAN on port 19878",
+        "connected": true,
+        "rejected": false,
+        "sessionEnded": false,
+        "validPoses": true,
+        "uniqueSpawns": true,
+        "peakPlayers": 2,
+        "joinedEvents": 2,
+        "leftEvents": 0,
+        "errors": 0,
+        "remoteMotion": 0.26435041427612305
+      },
+      "client": {
+        "mode": "client",
+        "status": "[Disconnect Event][Client-1][TransportClientId-4294967296][ClosedByRemote] Connection was closed by remote endpoint.",
+        "connected": true,
+        "rejected": false,
+        "sessionEnded": true,
+        "validPoses": true,
+        "uniqueSpawns": true,
+        "peakPlayers": 2,
+        "joinedEvents": 1,
+        "leftEvents": 1,
+        "errors": 0,
+        "remoteMotion": 0.041023433208465576
+      }
+    }
+  },
+  "foundationCommit": "a281cd53ef1670c125b853780d4cec5cb852a58d",
+  "sandbox": "Assets/CursedCrown/Tests/Person5/Person5_Sandbox.unity",
+  "interfacesReviewed": [
+    "IMatchState.Phase",
+    "IRoundResettable.ResetRound()",
+    "IPlayerState.IsAlive(playerId)",
+    "ISpawnService.GetValidCrownDrop(position)"
+  ],
+  "existingPhases": [
+    "Lobby",
+    "Playing",
+    "Finished"
+  ],
+  "scope": "Step 1 only; no crown or match gameplay implemented; no changes to main and no push."
+}
