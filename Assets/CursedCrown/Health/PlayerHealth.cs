@@ -142,16 +142,25 @@ namespace CursedCrown
             StopAllCoroutines();
             processedShots.Clear();
 
-            if (!Alive.Value && SpawnService != null &&
-                SpawnService.TryReserveSpawn(OwnerClientId, out Pose spawn))
+            if (!Alive.Value)
             {
-                FoundationAvatar avatar = GetComponent<FoundationAvatar>();
-                if (avatar != null)
+                if (SpawnService == null || !SpawnService.TryReserveSpawn(OwnerClientId, out Pose spawn))
                 {
-                    avatar.RootPosition.Value = spawn.position;
-                    avatar.RootRotation.Value = spawn.rotation;
-                    transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+                    StartCoroutine(RespawnAfterDelay());
+                    return;
                 }
+
+                FoundationAvatar avatar = GetComponent<FoundationAvatar>();
+                if (avatar == null)
+                {
+                    SpawnService.ReleaseReservation(OwnerClientId);
+                    Debug.LogError("PlayerHealth needs FoundationAvatar on the same player object.");
+                    return;
+                }
+
+                avatar.RootPosition.Value = spawn.position;
+                avatar.RootRotation.Value = spawn.rotation;
+                transform.SetPositionAndRotation(spawn.position, spawn.rotation);
             }
 
             Health.Value = GameRules.MaxHealth;
