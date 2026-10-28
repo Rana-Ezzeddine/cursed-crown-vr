@@ -17,6 +17,7 @@ namespace CursedCrown
 
         public int CurrentHealth => Health.Value;
         public bool IsAlive => Alive.Value;
+        public bool CanAct => IsSpawned && Alive.Value;
 
         public event Action<int, int> HealthChanged;
         public event Action<bool> AliveChanged;
@@ -67,7 +68,7 @@ namespace CursedCrown
             if (!IsServer || !IsSpawned)
                 return false;
 
-            if (!Alive.Value || hit.Target != OwnerClientId || hit.Shooter == hit.Target)
+            if (!CanAct || hit.Target != OwnerClientId || hit.Shooter == hit.Target)
                 return false;
 
             string shotId = hit.Round + ":" + hit.Shooter + ":" + hit.ShotSequence;
