@@ -24,6 +24,7 @@ namespace CursedCrown
         public event Action<ulong> PlayerDied;
 
         readonly HashSet<string> processedShots = new();
+        Collider[] playerColliders;
 
         // Person 2's spawn system registers itself here.
         public static void SetSpawnService(ISpawnService service)
@@ -35,6 +36,7 @@ namespace CursedCrown
         {
             Health.OnValueChanged += OnHealthValueChanged;
             Alive.OnValueChanged += OnAliveValueChanged;
+            playerColliders = GetComponentsInChildren<Collider>(true);
 
             if (IsOwner)
                 LocalPlayer = this;
@@ -45,6 +47,7 @@ namespace CursedCrown
                 Alive.Value = true;
             }
 
+            UpdateHitboxes(Alive.Value);
             HealthChanged?.Invoke(Health.Value, GameRules.MaxHealth);
             AliveChanged?.Invoke(Alive.Value);
         }
@@ -135,7 +138,17 @@ namespace CursedCrown
 
         void OnAliveValueChanged(bool previous, bool current)
         {
+            UpdateHitboxes(current);
             AliveChanged?.Invoke(current);
+        }
+
+        void UpdateHitboxes(bool enabled)
+        {
+            if (playerColliders == null)
+                return;
+
+            foreach (Collider playerCollider in playerColliders)
+                playerCollider.enabled = enabled;
         }
 
         public void ResetRound()
@@ -154,6 +167,7 @@ namespace CursedCrown
 
             Health.Value = GameRules.MaxHealth;
             Alive.Value = true;
+            UpdateHitboxes(true);
         }
     }
 }
