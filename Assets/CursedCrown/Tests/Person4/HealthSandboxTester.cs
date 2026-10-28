@@ -9,6 +9,8 @@ namespace CursedCrown
         public int TargetClientId;
 
         uint nextShotSequence = 1;
+        ValidatedHit lastTestHit;
+        bool hasLastTestHit;
 
         void Awake()
         {
@@ -34,6 +36,11 @@ namespace CursedCrown
 
             if (GUILayout.Button("Apply one hit (-25 HP)"))
                 ApplyTestHit();
+
+            GUI.enabled = hasLastTestHit;
+            if (GUILayout.Button("Repeat last hit (should reject)"))
+                RepeatLastHit();
+            GUI.enabled = true;
 
             if (GUILayout.Button("Reset health / respawn"))
                 ResetTarget();
@@ -71,8 +78,21 @@ namespace CursedCrown
             ValidatedHit hit = new ValidatedHit(0, shooterId, target.OwnerClientId,
                 nextShotSequence++, target.transform.position);
 
-            bool applied = target.ApplyValidatedHit(hit);
+            lastTestHit = hit;
+            hasLastTestHit = true;
+
+            bool applied = target.ApplyValidatedHit(lastTestHit);
             Debug.Log("Health sandbox hit. Accepted: " + applied);
+        }
+
+        void RepeatLastHit()
+        {
+            PlayerHealth target = FindTarget();
+            if (target == null || !hasLastTestHit)
+                return;
+
+            bool applied = target.ApplyValidatedHit(lastTestHit);
+            Debug.Log("Repeated sandbox hit. Accepted: " + applied);
         }
 
         void ResetTarget()
