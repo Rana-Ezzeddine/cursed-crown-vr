@@ -19,6 +19,7 @@ Reported as passing in Unity on 28 October 2026:
 - Repeating the exact same hit was rejected without additional damage.
 - The player respawned after the configured five-second delay with full health.
 - The player collider was disabled while dead and enabled again after respawn.
+- The duplicate-hit rejection and collider tests passed in Play Mode, as reported by the developer.
 - The Console had no red errors after the latest branch update.
 
 These results validate the isolated sandbox flow. Real weapon raycasts, cover, the production spawn service, multi-client health replication, and headset behaviour have not yet been validated.
@@ -39,9 +40,10 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 2. Enter Play Mode and click **Host LAN**.
 3. In the Game view, use the **PERSON 4 HEALTH SANDBOX** panel. Set target client ID to 0 for the host player.
 4. Click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
-5. Click **Apply one hit (-25 HP)** three more times. Health should reach 0; the player should be marked dead and its colliders should be disabled.
-6. Wait five seconds. Because the sandbox registers a simple test spawn service, the player should respawn at its starter spawn and return to 100 HP.
-7. Click **Reset health / respawn** to restore the target for another test. For a remote client, set the target ID to its client ID.
+5. Click **Apply one hit (-25 HP)** three more times. Health should reach 0; the player should be marked dead, its colliders should be disabled, and `Death events this run` should increase to 1.
+6. While the player is dead, click **Apply one hit (-25 HP)** again. Health should remain at 0 and the death-event count should remain 1.
+7. Wait five seconds. Because the sandbox registers a simple test spawn service, the player should respawn at its starter spawn and return to 100 HP.
+8. Click **Reset health / respawn** to restore the target for another test. For a remote client, set the target ID to its client ID.
 
 The panel simulates an already-validated hit; it does not test raycasts, cover, or Person 3's weapon code. Its spawn service reuses the starter's distinct initial spawn, so it does not test Person 2's future occupancy validation.
 
