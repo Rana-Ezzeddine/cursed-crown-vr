@@ -19,4 +19,17 @@ This folder contains the first isolated health-system implementation for the Per
 4. Members 2, 3, and 5 should check `IsAlive` before allowing teleport, firing, or crown pickup.
 5. Add `HealthHUD` to a Canvas and assign its `HealthText` and optional `StatusText` fields. For VR, use a World Space Canvas and position it where the player can comfortably see it.
 
-The shared player prefab and other teammates' files have intentionally not been changed in this branch yet. This code still needs to be imported and tested in Unity before it is considered verified.
+## Sandbox test
+
+The Person 4 sandbox has its own copy of the player prefab and a simple host-only test panel. It does not modify the shared FoundationPlayer prefab.
+
+1. Open `Assets/CursedCrown/Tests/Person4/Person4_Sandbox.unity` in Unity.
+2. Enter Play Mode and click **Host LAN**.
+3. In the Game view, use the **PERSON 4 HEALTH SANDBOX** panel. Set target client ID to 0 for the host player.
+4. Click **Apply one hit (-25 HP)** four times. Health should go 100, 75, 50, 25, 0; the player should be marked dead.
+5. Wait three seconds. Because the sandbox registers a simple test spawn service, the player should respawn at its starter spawn and return to 100 HP.
+6. Click **Reset health / respawn** to restore the target for another test. For a remote client, set the target ID to its client ID.
+
+The panel simulates an already-validated hit; it does not test raycasts, cover, or Person 3's weapon code. Its spawn service reuses the starter's distinct initial spawn, so it does not test Person 2's future occupancy validation.
+
+The sandbox scene and test prefab are branch-local copies. The shared player prefab, shared Arena scene, main branch, and teammates' files remain unchanged. The code must still be imported and played in Unity; I cannot run the Unity Editor or Quest hardware from GitHub, so runtime results must be confirmed by you.
