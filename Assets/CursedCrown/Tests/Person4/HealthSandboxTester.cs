@@ -11,6 +11,8 @@ namespace CursedCrown
         uint nextShotSequence = 1;
         ValidatedHit lastTestHit;
         bool hasLastTestHit;
+        PlayerHealth subscribedTarget;
+        int deathEvents;
 
         void Awake()
         {
@@ -19,6 +21,9 @@ namespace CursedCrown
 
         void OnDestroy()
         {
+            if (subscribedTarget != null)
+                subscribedTarget.PlayerDied -= OnPlayerDied;
+
             if (object.ReferenceEquals(PlayerHealth.SpawnService, this))
                 PlayerHealth.SetSpawnService(null);
         }
@@ -46,13 +51,31 @@ namespace CursedCrown
                 ResetTarget();
 
             PlayerHealth target = FindTarget();
+            if (target != subscribedTarget)
+            {
+                if (subscribedTarget != null)
+                    subscribedTarget.PlayerDied -= OnPlayerDied;
+
+                subscribedTarget = target;
+                deathEvents = 0;
+                if (subscribedTarget != null)
+                    subscribedTarget.PlayerDied += OnPlayerDied;
+            }
+
             if (target != null)
                 GUILayout.Label("Health: " + target.CurrentHealth + " / " + GameRules.MaxHealth +
                     " | Alive: " + target.IsAlive);
+            GUILayout.Label("Death events this run: " + deathEvents);
             else
                 GUILayout.Label("Target player is not connected.");
 
             GUILayout.EndArea();
+        }
+
+        void OnPlayerDied(ulong playerId)
+        {
+            if (subscribedTarget != null && playerId == subscribedTarget.OwnerClientId)
+                deathEvents++;
         }
 
         PlayerHealth FindTarget()
