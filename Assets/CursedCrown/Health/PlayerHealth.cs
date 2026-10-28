@@ -20,6 +20,7 @@ namespace CursedCrown
 
         public event Action<int, int> HealthChanged;
         public event Action<bool> AliveChanged;
+        public event Action<ulong> PlayerDied;
 
         readonly HashSet<string> processedShots = new();
 
@@ -92,12 +93,14 @@ namespace CursedCrown
             if (SpawnService != null)
                 SpawnService.ReleaseReservation(OwnerClientId);
 
-            StartCoroutine(RespawnAfterDelay());
+            PlayerDied?.Invoke(OwnerClientId);
+            StartCoroutine(RespawnAfterDelay(true));
         }
 
-        IEnumerator RespawnAfterDelay()
+        IEnumerator RespawnAfterDelay(bool waitForRespawn)
         {
-            yield return new WaitForSeconds(GameRules.RespawnSeconds);
+            if (waitForRespawn)
+                yield return new WaitForSeconds(GameRules.RespawnSeconds);
 
             FoundationAvatar avatar = GetComponent<FoundationAvatar>();
             if (avatar == null)
@@ -144,23 +147,8 @@ namespace CursedCrown
 
             if (!Alive.Value)
             {
-                if (SpawnService == null || !SpawnService.TryReserveSpawn(OwnerClientId, out Pose spawn))
-                {
-                    StartCoroutine(RespawnAfterDelay());
-                    return;
-                }
-
-                FoundationAvatar avatar = GetComponent<FoundationAvatar>();
-                if (avatar == null)
-                {
-                    SpawnService.ReleaseReservation(OwnerClientId);
-                    Debug.LogError("PlayerHealth needs FoundationAvatar on the same player object.");
-                    return;
-                }
-
-                avatar.RootPosition.Value = spawn.position;
-                avatar.RootRotation.Value = spawn.rotation;
-                transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+                StartCoroutine(RespawnAfterDelay(false));
+                return;
             }
 
             Health.Value = GameRules.MaxHealth;
