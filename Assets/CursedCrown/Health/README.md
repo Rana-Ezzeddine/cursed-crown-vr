@@ -12,6 +12,17 @@ This folder contains the first isolated health-system implementation for the Per
 - Respawning uses Person 2's `ISpawnService`; if no spawn is free, it waits and tries again.
 - `HealthChanged` and `AliveChanged` events are available for the HUD and feedback.
 
+## Manual sandbox validation
+
+Reported as passing in Unity on 28 October 2026:
+- Health decreased in 25-point steps from 100 to 0.
+- Repeating the exact same hit was rejected without additional damage.
+- The player respawned after the configured five-second delay with full health.
+- The player collider was disabled while dead and enabled again after respawn.
+- The Console had no red errors after the latest branch update.
+
+These results validate the isolated sandbox flow. Real weapon raycasts, cover, the production spawn service, multi-client health replication, and headset behaviour have not yet been validated.
+
 ## Integration still needed
 
 1. Add `PlayerHealth` to the networked `FoundationPlayer` prefab during the Person 4 integration step.
