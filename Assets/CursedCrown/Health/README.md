@@ -16,8 +16,8 @@ This folder contains the first isolated health-system implementation for the Per
 1. Add `PlayerHealth` to the networked `FoundationPlayer` prefab during the Person 4 integration step.
 2. Person 2's spawn-service component must call `PlayerHealth.SetSpawnService(this)` when it is ready.
 3. Person 3 must call `ApplyValidatedHit` on the target player's component after server-side shot validation.
-4. Members 2, 3, and 5 should check `IsAlive` before allowing teleport, firing, or crown pickup.
-5. Add `HealthHUD` to a Canvas and assign its `HealthText` and optional `StatusText` fields. For VR, use a World Space Canvas and position it where the player can comfortably see it.
+4. Members 2, 3, and 5 should check `CanAct` before allowing teleport, firing, or crown pickup. `IsAlive` remains available when they only need the alive state.
+5. `HealthHUD` is attached to the sandbox test player and creates a small World Space Canvas in front of the local player's tracked head.
 
 ## Sandbox test
 
