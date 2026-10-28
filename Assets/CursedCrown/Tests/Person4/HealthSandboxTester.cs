@@ -17,7 +17,7 @@ namespace CursedCrown
 
         void OnDestroy()
         {
-            if (PlayerHealth.SpawnService == this)
+            if (object.ReferenceEquals(PlayerHealth.SpawnService, this))
                 PlayerHealth.SetSpawnService(null);
         }
 
@@ -50,7 +50,7 @@ namespace CursedCrown
 
         PlayerHealth FindTarget()
         {
-            PlayerHealth[] players = FindObjectsByType<PlayerHealth>(FindObjectsSortMode.None);
+            PlayerHealth[] players = FindObjectsByType<PlayerHealth>();
             foreach (PlayerHealth player in players)
             {
                 if (player.OwnerClientId == (ulong)TargetClientId)
