@@ -15,11 +15,12 @@ This folder contains the first isolated health-system implementation for the Per
 
 ## Manual sandbox validation
 
-Reported as passing in Unity on 28 October 2026:
+Reported as passing in Unity on 29 October 2026:
 - Health decreased in 25-point steps from 100 to 0.
 - Repeating the exact same hit was rejected without additional damage.
 - The player respawned after the configured five-second delay with full health.
 - The player collider was disabled while dead and enabled again after respawn.
+- The death-event counter increased to 1 when the player died and remained 1 while dead, as reported by the developer.
 - The duplicate-hit rejection and collider tests passed in Play Mode, as reported by the developer.
 - The Console had no red errors after the latest branch update.
 
@@ -43,7 +44,7 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 4. Click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
 5. Click **Apply one hit (-25 HP)** three more times. Health should reach 0; the player should be marked dead, its colliders should be disabled, and `Death events this run` should increase to 1.
 6. While the player is dead, click **Apply one hit (-25 HP)** again. Health should remain at 0 and the death-event count should remain 1.
-7. Wait five seconds. Because the sandbox registers a simple test spawn service, the player should respawn at its starter spawn and return to 100 HP.
+7. Watch the HUD count down from five seconds. The player should then respawn at its starter spawn and return to 100 HP. If no spawn can be reserved, the HUD should show **WAITING FOR SPAWN** until one is available.
 8. Click **Reset health / respawn** to restore the target for another test. For a remote client, set the target ID to its client ID.
 
 The panel simulates an already-validated hit; it does not test raycasts, cover, or Person 3's weapon code. Its spawn service reuses the starter's distinct initial spawn, so it does not test Person 2's future occupancy validation.
