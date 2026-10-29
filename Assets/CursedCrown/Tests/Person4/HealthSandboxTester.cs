@@ -34,7 +34,7 @@ namespace CursedCrown
                 !NetworkManager.Singleton.IsServer)
                 return;
 
-            GUILayout.BeginArea(new Rect(20, 460, 300, 190), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(20, 440, 320, 230), GUI.skin.box);
             GUILayout.Label("PERSON 4 HEALTH SANDBOX");
             GUILayout.Label("Target client ID (0-4)");
             TargetClientId = Mathf.RoundToInt(GUILayout.HorizontalSlider(TargetClientId, 0, 4));
@@ -45,6 +45,10 @@ namespace CursedCrown
             GUI.enabled = hasLastTestHit;
             if (GUILayout.Button("Repeat last hit (should reject)"))
                 RepeatLastHit();
+
+            if (GUILayout.Button("Wrong-round hit (should reject)"))
+                ApplyWrongRoundHit();
+
             GUI.enabled = true;
 
             if (GUILayout.Button("Reset health / respawn"))
@@ -103,7 +107,7 @@ namespace CursedCrown
 
             // Use a different ID so the test shot is not treated as a self-hit.
             ulong shooterId = target.OwnerClientId == 0 ? 1UL : 0UL;
-            ValidatedHit hit = new ValidatedHit(0, shooterId, target.OwnerClientId,
+            ValidatedHit hit = new ValidatedHit(target.CurrentRound, shooterId, target.OwnerClientId,
                 nextShotSequence++, target.transform.position);
 
             lastTestHit = hit;
@@ -121,6 +125,23 @@ namespace CursedCrown
 
             bool applied = target.ApplyValidatedHit(lastTestHit);
             Debug.Log("Repeated sandbox hit. Accepted: " + applied);
+        }
+
+        void ApplyWrongRoundHit()
+        {
+            PlayerHealth target = FindTarget();
+            if (target == null)
+                return;
+
+            ulong shooterId = target.OwnerClientId == 0 ? 1UL : 0UL;
+            uint wrongRound = target.CurrentRound == uint.MaxValue ? 0u : target.CurrentRound + 1u;
+            ValidatedHit hit = new ValidatedHit(wrongRound, shooterId, target.OwnerClientId,
+                nextShotSequence++, target.transform.position);
+
+            int healthBefore = target.CurrentHealth;
+            bool applied = target.ApplyValidatedHit(hit);
+            Debug.Log("Wrong-round sandbox hit. Accepted: " + applied +
+                "; health unchanged: " + (target.CurrentHealth == healthBefore));
         }
 
         void ResetTarget()
