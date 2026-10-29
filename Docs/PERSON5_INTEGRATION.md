@@ -39,3 +39,13 @@ Points are earned per completed second of each possession; fractional seconds ar
 Compilation and structural scene validation have passed. See PERSON5_VERIFICATION.md for runtime evidence as checks complete. Recording was cancelled by the user.
 
 The avatar pose protocol now includes RightTracked. Use the same build on every peer. Production pickup rejects untracked right-hand poses; the host still trusts client tracking reports only within the existing pose plausibility limits. Call RefreshServices after dynamically installing/replacing teammate services; services are rediscovered on spawn and round reset.
+
+## Repeatable verification commands
+
+Use `Cursed Crown > Person 5 > Build Desktop Sandbox` for `Builds/Person5Sandbox.app`; the foundation build menu targets Arena and is not this test.
+
+- `python3 Tools/check_person5_network.py` launches independent local host/client players, then a late joiner, and drives real ready/pickup RPCs.
+- Add `--full-duration` to include a complete 240-second possession round.
+- Add `--editor` to use Unity Editor Play Mode for the host and the current standalone build for clients. Close this repository's Editor first; do not close another project's unsaved scene.
+
+The opt-in driver requires a development build and `-p5Mode`, runs only in Person5_Sandbox, and uses local JSON commands/reports in an OS temporary folder. It is absent from release builds. Its host-only placement commands simulate Person 2 movement; its IPlayerState and ISpawnService methods are explicit mocks. Ready/pickup commands use the ordinary production RPC entry points and network sender IDs. Test round durations are changed only at runtime. The saved sandbox prefab remains 240 seconds.

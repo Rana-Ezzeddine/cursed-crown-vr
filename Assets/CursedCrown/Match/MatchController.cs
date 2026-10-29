@@ -24,6 +24,7 @@ namespace CursedCrown
             public bool Equals(State o) => Phase == o.Phase && Deadline == o.Deadline && Round == o.Round &&
                 Carried == o.Carried && Carrier == o.Carrier && CrownPosition == o.CrownPosition;
         }
+        [Serializable]
         public struct PlayerRow : INetworkSerializable, IEquatable<PlayerRow>
         {
             public ulong Id;

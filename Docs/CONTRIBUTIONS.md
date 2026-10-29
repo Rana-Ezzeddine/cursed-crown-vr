@@ -12,6 +12,6 @@ Version selection used the installed Unity 6000.6.2f1 manual. Relay integration 
 | Person 2 | Pending | Pending | Pending | Pending |
 | Person 3 | Pending | Pending | Pending | Pending |
 | Person 4 | Pending | Pending | Pending | Pending |
-| Person 5 | Pending | Pending | Pending | Pending |
+| Person 5 — Rana | Crown possession/scoring, readiness, host match flow, synchronized deadline, scoreboard/ties, round reset and teammate adapters | Existing team foundation, Unity/NGO and primitive visuals; no third-party art | Codex-assisted implementation and tests; actual Unity build and five-process loopback checks passed. See PERSON5_VERIFICATION.md; headset/real teammate integration pending | feature/person5-crown-match |
 
 Record assets, tutorials, libraries, code snippets and adaptations when added. Every member should understand the authority model and complete a small live change/debug task.

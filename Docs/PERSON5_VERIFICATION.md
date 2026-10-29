@@ -16,3 +16,13 @@ Compilation does not establish working gameplay, networking, UI or Quest behavio
 This checkout contains the foundation session/avatar implementation, but no real Person 2 placement or Person 4 health implementation. The sandbox explicitly enables simulated alive state and desktop tracking. Automated health/placement tests use opt-in mocks, not teammate acceptance evidence. Real implementations must be connected and retested with both sandbox flags disabled.
 
 Quest/controller input, Android installation, mixed Quest 2/3 sessions, five physical headsets, Relay and university Wi-Fi remain unverified. Desktop results cannot certify these.
+
+## Standalone networking milestone
+
+`Person5Setup.BuildDesktop` succeeded with Person5_Sandbox explicitly selected. `Tools/check_person5_network.py` passed 64 checks across five independent desktop processes with zero reported runtime errors. Evidence and source/assembly hashes are in PERSON5_NETWORK_RESULTS.json.
+
+The run verified all-ready/host-only start; replicated deadline/ownership/scores; near versus far, untracked, missing-health, dead, wall-blocked and hand-inside-wall pickup; stale rounds; competing requests; completed-second scoring and fractional discard; death callback and alive polling; invalid-placement fallback and valid mock placement; late joining; carrier disconnect and retained points; reconnect; finish and overtime rejection; host-only restart; reset hooks; all-zero shared ties; repeated rounds; host loss and a fresh host session with one match object per peer.
+
+Two preliminary runs were not passes: the first exposed a missing JSON serialization attribute in the test report, and the second used a build predating a newly added fixture command. Both were corrected before the successful run. No failing run is counted as acceptance evidence.
+
+This milestone uses shortened rounds to exercise transitions. Full 240-second and Editor Play Mode results are recorded separately below when completed.
