@@ -63,11 +63,16 @@ namespace CursedCrown
             }
 
             if (target != null)
+            {
                 GUILayout.Label("Health: " + target.CurrentHealth + " / " + GameRules.MaxHealth +
                     " | Alive: " + target.IsAlive);
-            GUILayout.Label("Death events this run: " + deathEvents);
+            }
             else
+            {
                 GUILayout.Label("Target player is not connected.");
+            }
+
+            GUILayout.Label("Death events this run: " + deathEvents);
 
             GUILayout.EndArea();
         }
