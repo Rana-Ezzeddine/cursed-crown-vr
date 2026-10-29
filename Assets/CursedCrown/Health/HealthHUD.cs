@@ -22,7 +22,11 @@ namespace CursedCrown
                 return;
 
             if (HealthText == null || StatusText == null)
+            {
                 CreateHud();
+                if (HealthText == null || StatusText == null)
+                    return;
+            }
 
             HealthText.text = "Health: " + player.CurrentHealth + "/" + GameRules.MaxHealth;
             if (player.IsAlive)
