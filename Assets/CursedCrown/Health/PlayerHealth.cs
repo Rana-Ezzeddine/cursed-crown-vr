@@ -14,6 +14,7 @@ namespace CursedCrown
 
         public NetworkVariable<int> Health = new(GameRules.MaxHealth);
         public NetworkVariable<bool> Alive = new(true);
+        public NetworkVariable<double> RespawnAtServerTime = new(0d);
 
         public int CurrentHealth => Health.Value;
         public bool IsAlive => Alive.Value;
@@ -45,6 +46,7 @@ namespace CursedCrown
             {
                 Health.Value = GameRules.MaxHealth;
                 Alive.Value = true;
+                RespawnAtServerTime.Value = 0d;
             }
 
             UpdateHitboxes(Alive.Value);
@@ -97,6 +99,7 @@ namespace CursedCrown
             if (SpawnService != null)
                 SpawnService.ReleaseReservation(OwnerClientId);
 
+            RespawnAtServerTime.Value = NetworkManager.ServerTime.Time + GameRules.RespawnSeconds;
             PlayerDied?.Invoke(OwnerClientId);
             StartCoroutine(RespawnAfterDelay(true));
         }
@@ -123,6 +126,7 @@ namespace CursedCrown
                     transform.SetPositionAndRotation(spawn.position, spawn.rotation);
 
                     Health.Value = GameRules.MaxHealth;
+                    RespawnAtServerTime.Value = 0d;
                     Alive.Value = true;
                     yield break;
                 }
@@ -161,11 +165,13 @@ namespace CursedCrown
 
             if (!Alive.Value)
             {
+                RespawnAtServerTime.Value = NetworkManager.ServerTime.Time;
                 StartCoroutine(RespawnAfterDelay(false));
                 return;
             }
 
             Health.Value = GameRules.MaxHealth;
+            RespawnAtServerTime.Value = 0d;
             Alive.Value = true;
             UpdateHitboxes(true);
         }
