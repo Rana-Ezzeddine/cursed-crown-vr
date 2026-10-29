@@ -11,6 +11,7 @@ This folder contains the first isolated health-system implementation for the Per
 - At zero health, the player dies and waits five seconds before respawning.
 - Respawning uses Person 2's `ISpawnService`; if no spawn is free, it waits and tries again.
 - `HealthChanged` and `AliveChanged` events are available for the HUD and feedback.
+- The host replicates the respawn deadline; the local HUD counts down and shows when it is waiting for a free spawn.
 
 ## Manual sandbox validation
 
