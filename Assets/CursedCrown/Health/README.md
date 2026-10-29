@@ -20,8 +20,10 @@ Reported as passing in Unity on 29 October 2026:
 - Health decreased in 25-point steps from 100 to 0.
 - Repeating the exact same hit was rejected without additional damage.
 - The player respawned after the configured five-second delay with full health.
+- The local HUD countdown worked; when respawns were blocked, it changed to `WAITING FOR SPAWN`, then the player respawned after a spawn became available.
 - The player collider was disabled while dead and enabled again after respawn.
 - The death-event counter increased to 1 when the player died and remained 1 while dead, as reported by the developer.
+- The wrong-round test did not reduce health, as expected: hits whose round differs from `CurrentRound` are rejected.
 - The duplicate-hit rejection and collider tests passed in Play Mode, as reported by the developer.
 - The Console had no red errors after the latest branch update.
 
@@ -42,7 +44,7 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 1. Open `Assets/CursedCrown/Tests/Person4/Person4_Sandbox.unity` in Unity.
 2. Enter Play Mode and click **Host LAN**.
 3. In the Game view, use the **PERSON 4 HEALTH SANDBOX** panel. Set target client ID to 0 for the host player.
-4. Click **Wrong-round hit (should reject)** first. The Console should report `Accepted: False` and unchanged health. Then click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
+4. Click **Wrong-round hit (should reject)** first. This deliberately submits a hit for a different round, so health must not change and the Console should report `Accepted: False`. Then click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
 5. Click **Apply one hit (-25 HP)** three more times. Health should reach 0; the player should be marked dead, its colliders should be disabled, and `Death events this run` should increase to 1.
 6. While the player is dead, click **Apply one hit (-25 HP)** again. Health should remain at 0 and the death-event count should remain 1.
 7. For the normal path, leave the spawn available, watch the HUD count down from five seconds, and confirm the player respawns at 100 HP.
