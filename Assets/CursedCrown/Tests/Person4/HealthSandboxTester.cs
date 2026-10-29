@@ -13,6 +13,7 @@ namespace CursedCrown
         bool hasLastTestHit;
         PlayerHealth subscribedTarget;
         int deathEvents;
+        bool blockTestRespawns;
 
         void Awake()
         {
@@ -34,7 +35,7 @@ namespace CursedCrown
                 !NetworkManager.Singleton.IsServer)
                 return;
 
-            GUILayout.BeginArea(new Rect(20, 440, 320, 230), GUI.skin.box);
+            GUILayout.BeginArea(new Rect(20, 420, 340, 270), GUI.skin.box);
             GUILayout.Label("PERSON 4 HEALTH SANDBOX");
             GUILayout.Label("Target client ID (0-4)");
             TargetClientId = Mathf.RoundToInt(GUILayout.HorizontalSlider(TargetClientId, 0, 4));
@@ -48,6 +49,10 @@ namespace CursedCrown
 
             if (GUILayout.Button("Wrong-round hit (should reject)"))
                 ApplyWrongRoundHit();
+
+            if (GUILayout.Button(blockTestRespawns ?
+                "Make respawn spawn available" : "Simulate no free respawn spawn"))
+                blockTestRespawns = !blockTestRespawns;
 
             GUI.enabled = true;
 
@@ -155,6 +160,9 @@ namespace CursedCrown
         public bool TryReserveSpawn(ulong playerId, out Pose pose)
         {
             pose = default;
+            if (blockTestRespawns)
+                return false;
+
             if (FoundationSession.Instance == null || FoundationSession.Instance.Manager == null ||
                 !FoundationSession.Instance.Manager.IsServer)
                 return false;
