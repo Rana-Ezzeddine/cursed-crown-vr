@@ -13,6 +13,10 @@ namespace CursedCrown.Editor
             try
             {
                 if (root.GetComponent<NetworkGun>() == null) root.AddComponent<NetworkGun>();
+                // A body collider makes shots hittable until Person 4 supplies its hitboxes.
+                var body = root.transform.Find("Body");
+                if (body != null && body.GetComponent<Collider>() == null)
+                    body.gameObject.AddComponent<BoxCollider>();
                 PrefabUtility.SaveAsPrefabAsset(root, path);
                 Debug.Log("CC_WEAPONS_INSTALLED");
             }
@@ -20,4 +24,5 @@ namespace CursedCrown.Editor
         }
     }
 }
+
 
