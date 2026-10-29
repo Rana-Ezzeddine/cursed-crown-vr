@@ -191,6 +191,9 @@ GameObject:
   - component: {fileID: 4083622787821903007}
   - component: {fileID: 1304983115799256298}
   - component: {fileID: 2944868045665734658}
+  - component: {fileID: 4923419256123456789}
+  - component: {fileID: 5839217402856123047}
+  - component: {fileID: 6781245309812476503}
   m_Layer: 0
   m_Name: FoundationPlayer
   m_TagString: Untagged
@@ -455,3 +458,64 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4923419256123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5f73e1c2b684d42a8c09f6b132e7d55, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.PlayerHealth
+  Health:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 100
+  Alive:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 1
+
+--- !u!136 &5839217402856123047
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.3
+  m_Height: 1.9
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.95, z: 0}
+
+--- !u!114 &6781245309812476503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6e4d18c2a734f08ab5c6e9d1f073842, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.HealthHUD
+  HealthText: {fileID: 0}
+  StatusText: {fileID: 0}
