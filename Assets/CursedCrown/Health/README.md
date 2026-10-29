@@ -31,7 +31,7 @@ These results validate the isolated sandbox flow. Real weapon raycasts, cover, t
 
 ## Integration still needed
 
-1. `PlayerHealth`, `HealthHUD`, and a root `CapsuleCollider` are now integrated into the shared `FoundationPlayer` prefab on `feature/p4-health-respawn`. The Arena scene already registers this prefab through `DefaultNetworkPrefabs.asset`, so no scene or prefab-list change was needed. This prefab edit remains branch-only until the team reviews and merges it.
+1. `PlayerHealth`, `HealthHUD`, and a root `CapsuleCollider` are now integrated into the shared `FoundationPlayer` prefab on `feature/p4-health-respawn`. The Arena NetworkManager's `PlayerPrefab` already points directly to this prefab, so no Arena scene edit was needed. This prefab edit remains branch-only until the team reviews and merges it.
 2. Person 2's production spawn-service component must call `PlayerHealth.SetSpawnService(this)` when it is ready.
 3. Person 3 must call `ApplyValidatedHit` on the target player's component after server-side shot validation.
 4. Person 5 must call `SetCurrentRound(round)` for each spawned player on the host when a player joins mid-round and whenever the round changes.
