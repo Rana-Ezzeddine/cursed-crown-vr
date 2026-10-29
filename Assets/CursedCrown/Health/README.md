@@ -6,6 +6,7 @@ This folder contains the first isolated health-system implementation for the Per
 
 - Health starts at 100 and the host owns its networked value.
 - The host calls `ApplyValidatedHit` only after Person 3 validates a shot.
+- Hits from a round other than the active round are rejected. Person 5 must call `SetCurrentRound(round)` on every spawned `PlayerHealth` on the host when the round changes.
 - A shot is applied only once, and a dead player cannot take more damage.
 - Player colliders are disabled while dead and re-enabled when alive.
 - At zero health, the player dies and waits five seconds before respawning.
@@ -41,7 +42,7 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 1. Open `Assets/CursedCrown/Tests/Person4/Person4_Sandbox.unity` in Unity.
 2. Enter Play Mode and click **Host LAN**.
 3. In the Game view, use the **PERSON 4 HEALTH SANDBOX** panel. Set target client ID to 0 for the host player.
-4. Click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
+4. Click **Wrong-round hit (should reject)** first. The Console should report `Accepted: False` and unchanged health. Then click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
 5. Click **Apply one hit (-25 HP)** three more times. Health should reach 0; the player should be marked dead, its colliders should be disabled, and `Death events this run` should increase to 1.
 6. While the player is dead, click **Apply one hit (-25 HP)** again. Health should remain at 0 and the death-event count should remain 1.
 7. Watch the HUD count down from five seconds. The player should then respawn at its starter spawn and return to 100 HP. If no spawn can be reserved, the HUD should show **WAITING FOR SPAWN** until one is available.
