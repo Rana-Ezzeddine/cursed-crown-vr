@@ -68,8 +68,10 @@
   ],
   "editorHost": true,
   "fullDuration": false,
+  "realHealth": false,
   "date": "2026-10-29",
   "unity": "6000.6.2f1",
+  "shared_prefab_registry": "Original committed registry; runtime registration verified",
   "final_report_errors": {
     "host": 0,
     "late": 0,
@@ -80,8 +82,10 @@
   "production_source_sha256": {
     "Assets/CursedCrown/Match/CrownMatchRules.cs": "4e1d1d030b260f9e9f7c6b27ed29fd360505b1bdd90360a8ac82213fdff03413",
     "Assets/CursedCrown/Match/MatchClock.cs": "44b4de4453c44e0c7550690a72b3e3ab7b2b3c60aaf6609c8feeb85ed3b6d0ab",
-    "Assets/CursedCrown/Match/MatchController.cs": "2df48ae277be0fbc33f4da679e124ea8f110b8f32499dd0d936a936962e25b04",
+    "Assets/CursedCrown/Match/MatchController.cs": "e480ee4893b397b0fb071fe4a4a3142f371b56791751a42b6af2ff239d21901f",
+    "Assets/CursedCrown/Match/Person5HealthBridge.cs": "96db0da781db4f1208ed0f4c03a869e2f9ff04b1401acdaac18538ce0722cf1e",
     "Assets/CursedCrown/Match/MatchBootstrap.cs": "969173831a4486dc1a1e451c273b0b6e0250b1eb76990ca8db1ba4675f46f1eb",
-    "Assets/CursedCrown/Match/MatchPresentation.cs": "de4d9bea0306e799c8fdef6f93cbddba905ae1758d2ffd5c4b33f3705ec7fcd0"
-  }
+    "Assets/CursedCrown/Match/MatchPresentation.cs": "62110f6ea97b2d4448a980be62f9658872cebd9f9c587a0f9f9f566051376676"
+  },
+  "assembly_sha256": "d4bfda5af7f59cecefc19ebd9adb298453c05c91893cd7758252d2a1d70e5cb1"
 }

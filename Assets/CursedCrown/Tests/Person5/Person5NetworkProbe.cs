@@ -16,17 +16,21 @@ namespace CursedCrown.Tests
         {
             public int sequence;
             public string action;
-            public ulong player;
+            public ulong player, shooter;
+            public int count;
+            public uint shot;
             public uint round;
             public bool value;
             public float seconds;
             public Vector3 position;
         }
+        [Serializable] public class HealthRow { public ulong id; public int hp; public bool alive; }
         [Serializable] public class Report
         {
             public string mode, phase, result, error;
             public int ack, errors, resets, matchObjects;
-            public bool connected, carried, accepted;
+            public bool connected, carried, accepted, mockAlive;
+            public HealthRow[] health;
             public uint round;
             public ulong localId, carrier;
             public double remaining, deadline, serverTime;
@@ -35,6 +39,7 @@ namespace CursedCrown.Tests
             public MatchController.PlayerRow[] scores;
         }
         string prefix, mode;
+        bool realHealth;
         readonly Report report = new();
         readonly HashSet<ulong> dead = new();
         FoundationSession session;
@@ -50,7 +55,8 @@ namespace CursedCrown.Tests
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install()
         {
-            if (Arg("-p5Mode") == "" || UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Person5_Sandbox") return;
+            var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (Arg("-p5Mode") == "" || (scene != "Person5_Sandbox" && scene != "Person5_HealthIntegration")) return;
             new GameObject("OPT-IN PERSON 5 TEST FIXTURE").AddComponent<Person5NetworkProbe>();
         }
         void Start()
@@ -58,6 +64,8 @@ namespace CursedCrown.Tests
             mode = Arg("-p5Mode"); prefix = Arg("-p5Report");
             if (string.IsNullOrEmpty(prefix)) { enabled = false; return; }
             report.mode = mode;
+            realHealth = Arg("-p5RealHealth") == "1";
+            if (realHealth) PlayerHealth.SetSpawnService(this);
             Application.logMessageReceived += Log;
             Application.targetFrameRate = 30; QualitySettings.vSyncCount = 0;
             session = FoundationSession.Instance;
@@ -107,6 +115,13 @@ namespace CursedCrown.Tests
                     if (!session.Manager.IsServer) throw new InvalidOperationException("Fixture mutation requires host.");
                     switch (cmd.action)
                     {
+                        case "hit":
+                            var bridge = match.GetComponent<Person5HealthBridge>();
+                            if (bridge == null) throw new InvalidOperationException("Real health bridge missing.");
+                            for (int i = 0; i < cmd.count; i++)
+                                report.accepted = bridge.TryApplyValidatedHit(new ValidatedHit(cmd.round, cmd.shooter,
+                                    cmd.player, cmd.shot + (uint)i, Vector3.zero));
+                            break;
                         case "services":
                             match.AllowMockAlive = false;
                             if (!cmd.value) gameObject.SetActive(false);
@@ -149,13 +164,23 @@ namespace CursedCrown.Tests
             report.matchObjects = FindObjectsByType<MatchController>(FindObjectsSortMode.None).Count(m => m.IsSpawned);
             if (m != null && m.IsSpawned)
             {
-                report.phase = m.Phase.ToString(); report.round = m.RoundId; report.roundSeconds = m.RoundSeconds;
+                report.phase = m.Phase.ToString(); report.round = m.RoundId; report.roundSeconds = m.RoundSeconds; report.mockAlive = m.AllowMockAlive;
                 report.carried = m.Snapshot.Carried; report.carrier = m.Snapshot.Carrier;
                 report.crown = m.Snapshot.CrownPosition; report.remaining = m.RemainingSeconds;
                 report.deadline = m.Snapshot.Deadline; report.serverTime = session.Manager.ServerTime.Time;
                 var rows = new List<MatchController.PlayerRow>();
                 foreach (var row in m.Scores) rows.Add(row);
                 report.scores = rows.ToArray(); report.result = m.ResultsText();
+                if (realHealth)
+                {
+                    var healthRows = new List<HealthRow>();
+                    foreach (var row in rows)
+                    {
+                        var h = Person5HealthBridge.FindHealth(row.Id);
+                        if (h != null) healthRows.Add(new HealthRow { id = row.Id, hp = h.CurrentHealth, alive = h.IsAlive });
+                    }
+                    report.health = healthRows.ToArray();
+                }
             }
             var temp = prefix + ".tmp";
             File.WriteAllText(temp, JsonUtility.ToJson(report, true));
@@ -171,10 +196,12 @@ namespace CursedCrown.Tests
             Application.Quit(0);
 #endif
         }
-        void OnDestroy() { Application.logMessageReceived -= Log; }
+        void OnDestroy() { Application.logMessageReceived -= Log; if (realHealth) PlayerHealth.SetSpawnService(null); }
         public bool IsAlive(ulong id) => !dead.Contains(id);
         public int GetCharge(ulong id) => 10;
-        public bool TryReserveSpawn(ulong id, out Pose pose) { pose = default; return false; }
+        public bool TryReserveSpawn(ulong id, out Pose pose)
+        { pose = default; if (!realHealth || session == null || !session.Manager.IsServer) return false;
+            pose = session.AssignSpawn(id); return true; }
         public void ReleaseReservation(ulong id) { }
         public Vector3 GetValidCrownDrop(Vector3 requested) => placement == "valid" ? new Vector3(0, 1.35f, -.1f) : new Vector3(float.NaN, 0, 0);
         int resets;

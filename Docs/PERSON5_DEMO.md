@@ -16,7 +16,7 @@ The host owns one crown and one match. A player requests readiness or pickup; th
 
 The saved sandbox has 240-second rounds and explicitly permits mock alive state and desktop hand simulation. The ordinary desktop rig cannot walk from its initial spawn to the centre: it only simulates bounded physical head movement. Use the automated test fixture to demonstrate reachable desktop pickup, or integrate Person 2's actual movement. Do not enlarge the one-metre pickup range to hide missing movement.
 
-In VR, aim at lobby/match tiles and press the right trigger. Crown pickup uses the **right primary/A button**. The host requires the right hand within one metre and a clear reach; tracking is mandatory when AllowDesktopPickup is disabled. Headset input and readability still need physical verification.
+In VR, aim at lobby/match tiles and press the right trigger. Crown pickup uses the **right grip button**. The host requires the right hand within one metre and a clear reach; tracking is mandatory when AllowDesktopPickup is disabled. Headset input and readability still need physical verification.
 
 ## Explain scoring with an example
 

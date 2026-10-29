@@ -41,7 +41,7 @@ namespace CursedCrown
                 Track(XRNode.LeftHand,LeftHand);
                 Track(XRNode.RightHand,RightHand);
                 right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton,out trigger);
-                if (RightTracked) right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primaryButton, out pickup);
+                if (RightTracked) right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.gripButton, out pickup);
             }
             else
             {

@@ -12,6 +12,8 @@ Version selection used the installed Unity 6000.6.2f1 manual. Relay integration 
 | Person 2 | Pending | Pending | Pending | Pending |
 | Person 3 | Pending | Pending | Pending | Pending |
 | Person 4 | Pending | Pending | Pending | Pending |
-| Person 5 — Rana | Crown possession/scoring, readiness, host match flow, synchronized deadline, scoreboard/ties, round reset and teammate adapters | Existing team foundation, Unity/NGO and primitive visuals; no third-party art | Codex-assisted implementation and tests; actual Unity build and five-process loopback checks passed. See PERSON5_VERIFICATION.md; headset/real teammate integration pending | feature/person5-crown-match |
+| Person 5 — Rana | Crown possession/scoring, readiness, host match flow, synchronized deadline, scoreboard/ties, round reset and teammate adapters | Existing team foundation, Unity/NGO and primitive visuals; no third-party art | Codex-assisted implementation and tests; actual Unity build and five-process loopback checks passed. See PERSON5_VERIFICATION.md; headset/real placement integration pending; 30 real PlayerHealth integration checks passed | feature/person5-crown-match |
 
 Record assets, tutorials, libraries, code snippets and adaptations when added. Every member should understand the authority model and complete a small live change/debug task.
+
+Person 4 dependency: PlayerHealth.cs and its metadata were imported byte-for-byte from feature/p4-health-respawn at d00a040 for Person 5 integration. Credit remains with Person 4. Rana’s added work is the IPlayerState/round-validation adapter and isolated integration tests; no health-system authorship is claimed.

@@ -133,7 +133,7 @@ namespace CursedCrown
         public void RefreshServices()
         {
             var components = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-            health = components.OfType<IPlayerState>().FirstOrDefault();
+            health = GetComponent<IPlayerState>() ?? components.OfType<IPlayerState>().FirstOrDefault();
             spawns = components.OfType<ISpawnService>().FirstOrDefault();
         }
         bool IsAlive(ulong id) => health != null ? health.IsAlive(id) : AllowMockAlive;

@@ -104,7 +104,7 @@ namespace CursedCrown
             foreach (var row in match.Scores)
                 text.AppendLine("P" + row.Id + ": " + row.Score + (row.Connected ? row.Ready ? " ready" : "" : " left"));
             text.AppendLine(match.ResultsText());
-            text.AppendLine("Pickup: right A button, within 1m");
+            text.AppendLine("Pickup: right grip button, within 1m");
             if (match.AllowMockAlive || match.AllowDesktopPickup) text.AppendLine("SANDBOX: simulated health / tracking");
             return text.ToString();
         }

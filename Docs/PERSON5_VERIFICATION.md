@@ -1,5 +1,7 @@
 # Person 5 verification — 29 October 2026
 
+Current outcome: crown/match implementation is built and desktop-verified, including real Person 4 health integration. Real Person 2 placement and physical Quest validation remain outstanding.
+
 ## Compilation milestone
 
 - Existing repository and `feature/person5-crown-match`, starting at `feeb3cc`.
@@ -13,7 +15,7 @@ Compilation does not establish working gameplay, networking, UI or Quest behavio
 
 ## Missing integrations and hardware
 
-This checkout contains the foundation session/avatar implementation, but no real Person 2 placement or Person 4 health implementation. The sandbox explicitly enables simulated alive state and desktop tracking. Automated health/placement tests use opt-in mocks, not teammate acceptance evidence. Real implementations must be connected and retested with both sandbox flags disabled.
+The original sandbox uses explicit mocks. The separate health-integration scene now includes Person 4’s unchanged PlayerHealth through a Person 5 adapter, with mock alive disabled. Person 2’s actual placement service is still unavailable. Desktop hand simulation remains enabled; physical integration must be retested with both sandbox flags disabled.
 
 Quest/controller input, Android installation, mixed Quest 2/3 sessions, five physical headsets, Relay and university Wi-Fi remain unverified. Desktop results cannot certify these.
 
@@ -36,3 +38,13 @@ This milestone uses shortened rounds to exercise transitions. Full 240-second an
 - No Android devices were listed by the installed ADB tool.
 
 Remote follow-up: Person 4 and Person 2 work exists on separate branches. Their public contracts are being inspected for real integration; the earlier statement about missing implementations refers to this feature checkout before dependency integration.
+
+## Real Person 4 integration milestone
+
+Imported Person 4's PlayerHealth source/metadata unchanged from `d00a040`; added Person5HealthBridge and a separate Person5_HealthIntegration scene, player prefab and match prefab. Its explicit build succeeded. Thirty standalone host/client checks passed with AllowMockAlive disabled and zero runtime errors: replicated damage, duplicate-hit rejection, real death/drop, dead pickup rejection, real respawn and retake, round-guarded hits, and reset cancellation of a pending real respawn. See PERSON5_REAL_HEALTH_RESULTS.json.
+
+Health, death, respawn and reset were real Person 4 code; spawn placement/reservations and drop service were still explicitly mocked. Person 2's remote branch has no ISpawnService yet. Person 1's newer session branch was inspected for API/input compatibility but not merged. See PERSON5_TEAM_INTEGRATION.md for exact revisions and integration caveats.
+
+Crown input now uses right grip, avoiding right A teleport and right B session-menu bindings found on teammate branches. This mapping is compiled but has not been pressed on hardware.
+
+Final recheck: both sandbox builds succeeded with the original shared prefab registry restored. The real-health run passed all 30 checks again, and final Editor Play Mode plus standalone clients passed all 64 checks with zero errors. Shared Arena, shared FoundationPlayer, pinned package files and main are unchanged. Original draft .meta files match the handoff byte-for-byte.
