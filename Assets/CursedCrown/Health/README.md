@@ -14,20 +14,20 @@ This folder contains the first isolated health-system implementation for the Per
 - `HealthChanged` and `AliveChanged` events are available for the HUD and feedback.
 - The host replicates the respawn deadline; the local HUD counts down and shows when it is waiting for a free spawn.
 
-## Manual sandbox validation
+## Validation in Unity
 
-Reported as passing in Unity on 29 October 2026:
-- Health decreased in 25-point steps from 100 to 0.
+Reported as passing on 29 October 2026:
+- **Sandbox:** Health decreased in 25-point steps from 100 to 0.
 - Repeating the exact same hit was rejected without additional damage.
+- The death-event counter increased to 1 on death and remained 1 while the player was dead.
+- Player colliders were disabled on death and re-enabled after respawn.
 - The player respawned after the configured five-second delay with full health.
-- The local HUD countdown worked; when respawns were blocked, it changed to `WAITING FOR SPAWN`, then the player respawned after a spawn became available.
-- The player collider was disabled while dead and enabled again after respawn.
-- The death-event counter increased to 1 when the player died and remained 1 while dead, as reported by the developer.
+- The local HUD countdown worked. When respawns were blocked, it changed to `WAITING FOR SPAWN`; when a spawn became available, the player respawned without restarting the session.
 - The wrong-round test did not reduce health, as expected: hits whose round differs from `CurrentRound` are rejected.
-- The duplicate-hit rejection and collider tests passed in Play Mode, as reported by the developer.
 - The Console had no red errors after the latest branch update.
+- **Production prefab smoke test:** After adding the components to `FoundationPlayer.prefab`, the developer ran `Arena.unity` and confirmed that the HUD appeared on the normal spawned player and was working.
 
-These results validate the isolated sandbox flow. Real weapon raycasts, cover, the production spawn service, multi-client health replication, and headset behaviour have not yet been validated.
+The production-prefab check confirms that the components load and the HUD is visible in the Arena. Real weapon raycasts, the production spawn service, round-controller integration, full multi-client damage replication, and physical Quest behaviour still require their corresponding systems and end-to-end tests.
 
 ## Integration still needed
 
