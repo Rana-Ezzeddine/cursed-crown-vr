@@ -6,7 +6,7 @@ This folder contains the first isolated health-system implementation for the Per
 
 - Health starts at 100 and the host owns its networked value.
 - The host calls `ApplyValidatedHit` only after Person 3 validates a shot.
-- Hits from a round other than the active round are rejected. Person 5 must call `SetCurrentRound(round)` on every spawned `PlayerHealth` on the host when the round changes.
+- Hits from a round other than the active round are rejected. Person 5 must call `SetCurrentRound(round)` on each spawned `PlayerHealth` on the host, both when a player joins mid-round and whenever the round changes.
 - A shot is applied only once, and a dead player cannot take more damage.
 - Player colliders are disabled while dead and re-enabled when alive.
 - At zero health, the player dies and waits five seconds before respawning.
