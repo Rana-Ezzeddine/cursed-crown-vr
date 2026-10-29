@@ -50,16 +50,21 @@ namespace CursedCrown
             if (shooter != OwnerClientId || !CanAct(shooter) || Recharging.Value || Charge.Value <= 0 || now < nextShot) return;
             nextShot = now + fireInterval;
             Charge.Value--;
+            sequence++;
             var pose = avatar.TrackedPose.Value;
             Vector3 origin = transform.TransformPoint(pose.Right);
             Vector3 direction = transform.rotation * pose.RightRotation * Vector3.forward;
             Vector3 end = origin + direction * range;
-            if (Physics.Raycast(origin + direction * .18f, direction, out RaycastHit hit, range, hitMask, QueryTriggerInteraction.Ignore))
+            var hits = Physics.RaycastAll(origin, direction, range, hitMask, QueryTriggerInteraction.Ignore);
+            Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            foreach (var hit in hits)
             {
+                if (hit.collider.transform.IsChildOf(transform)) continue;
                 end = hit.point;
                 var target = hit.collider.GetComponentInParent<FoundationAvatar>();
                 if (target != null && target.OwnerClientId != shooter && (PlayerState == null || PlayerState.IsAlive(target.OwnerClientId)))
-                    HitValidated?.Invoke(new ValidatedHit(Round, shooter, target.OwnerClientId, ++sequence, hit.point));
+                    HitValidated?.Invoke(new ValidatedHit(Round, shooter, target.OwnerClientId, sequence, hit.point));
+                break;
             }
             ShotFired?.Invoke(shooter, origin, end);
             ShotEffectRpc(origin, end);
@@ -90,5 +95,6 @@ namespace CursedCrown
         }
     }
 }
+
 
 
