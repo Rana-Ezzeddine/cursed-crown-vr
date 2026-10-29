@@ -10,6 +10,8 @@ namespace CursedCrown
         void OnDisable() => NetworkGun.ShotFired -= Show;
         void Show(ulong shooter, Vector3 origin, Vector3 end)
         {
+            var avatar = GetComponent<FoundationAvatar>();
+            if (avatar == null || avatar.OwnerClientId != shooter) return;
             var tracer = new GameObject("Shot tracer");
             var line = tracer.AddComponent<LineRenderer>();
             line.positionCount = 2;
@@ -32,5 +34,6 @@ namespace CursedCrown
         }
     }
 }
+
 
 
