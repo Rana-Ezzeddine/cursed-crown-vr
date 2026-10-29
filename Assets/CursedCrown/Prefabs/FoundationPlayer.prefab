@@ -192,6 +192,7 @@ GameObject:
   - component: {fileID: 1304983115799256298}
   - component: {fileID: 2944868045665734658}
   - component: {fileID: 8243104650712330951}
+  - component: {fileID: 1147781467901825480}
   m_Layer: 0
   m_Name: FoundationPlayer
   m_TagString: Untagged
@@ -304,6 +305,19 @@ MonoBehaviour:
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &1147781467901825480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 142a7a73196441b4b7302cde28e249a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.GunEffects
+  lifetime: 0.08
 --- !u!1 &7654532421218699520
 GameObject:
   m_ObjectHideFlags: 0
