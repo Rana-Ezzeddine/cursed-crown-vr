@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -24,7 +25,21 @@ namespace CursedCrown
                 CreateHud();
 
             HealthText.text = "Health: " + player.CurrentHealth + "/" + GameRules.MaxHealth;
-            StatusText.text = player.IsAlive ? "" : "ELIMINATED - RESPAWNING";
+            if (player.IsAlive)
+            {
+                StatusText.text = "";
+            }
+            else
+            {
+                NetworkManager manager = NetworkManager.Singleton;
+                double remaining = manager == null ? 0d :
+                    player.RespawnAtServerTime.Value - manager.ServerTime.Time;
+
+                if (remaining > 0d)
+                    StatusText.text = "RESPAWNING IN " + remaining.ToString("F1") + "s";
+                else
+                    StatusText.text = "WAITING FOR SPAWN";
+            }
         }
 
         void CreateHud()
