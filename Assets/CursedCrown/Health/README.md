@@ -31,15 +31,16 @@ These results validate the isolated sandbox flow. Real weapon raycasts, cover, t
 
 ## Integration still needed
 
-1. Add `PlayerHealth` to the networked `FoundationPlayer` prefab during the Person 4 integration step.
-2. Person 2's spawn-service component must call `PlayerHealth.SetSpawnService(this)` when it is ready.
+1. `PlayerHealth`, `HealthHUD`, and a root `CapsuleCollider` are now integrated into the shared `FoundationPlayer` prefab on `feature/p4-health-respawn`. The Arena scene already registers this prefab through `DefaultNetworkPrefabs.asset`, so no scene or prefab-list change was needed. This prefab edit remains branch-only until the team reviews and merges it.
+2. Person 2's production spawn-service component must call `PlayerHealth.SetSpawnService(this)` when it is ready.
 3. Person 3 must call `ApplyValidatedHit` on the target player's component after server-side shot validation.
-4. Members 2, 3, and 5 should check `CanAct` before allowing teleport, firing, or crown pickup. `IsAlive` remains available when they only need the alive state.
-5. `HealthHUD` is attached to the sandbox test player and creates a small World Space Canvas in front of the local player's tracked head.
+4. Person 5 must call `SetCurrentRound(round)` for each spawned player on the host when a player joins mid-round and whenever the round changes.
+5. Members 2, 3, and 5 should check `CanAct` before allowing teleport, firing, or crown pickup. `IsAlive` remains available when they only need the alive state.
+6. `HealthHUD` creates a small World Space Canvas in front of the local player's tracked head. It is attached to both the sandbox test prefab and the production player prefab on this branch.
 
 ## Sandbox test
 
-The Person 4 sandbox has its own copy of the player prefab and a simple host-only test panel. It does not modify the shared FoundationPlayer prefab.
+The Person 4 sandbox has its own copy of the player prefab and a simple host-only test panel. The production `FoundationPlayer` prefab also has the Player 4 components on this feature branch; the shared Arena scene and `main` branch are unchanged.
 
 1. Open `Assets/CursedCrown/Tests/Person4/Person4_Sandbox.unity` in Unity.
 2. Enter Play Mode and click **Host LAN**.
@@ -53,4 +54,4 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 
 The panel simulates an already-validated hit; it does not test raycasts, cover, or Person 3's weapon code. Its spawn service reuses the starter's distinct initial spawn, so it does not test Person 2's future occupancy validation.
 
-The sandbox scene and test prefab are branch-local copies. The shared player prefab, shared Arena scene, main branch, and teammates' files remain unchanged. The code must still be imported and played in Unity; I cannot run the Unity Editor or Quest hardware from GitHub, so runtime results must be confirmed by you.
+The sandbox scene and test prefab are branch-local copies. This feature branch also integrates Player 4's components into `FoundationPlayer.prefab`; `main`, the shared Arena scene, and teammates' files remain unchanged. The code must still be imported and played in Unity; I cannot run the Unity Editor or Quest hardware from GitHub, so runtime results must be confirmed by you.
