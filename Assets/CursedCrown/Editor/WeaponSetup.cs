@@ -13,6 +13,7 @@ namespace CursedCrown.Editor
             try
             {
                 if (root.GetComponent<NetworkGun>() == null) root.AddComponent<NetworkGun>();
+                if (root.GetComponent<GunEffects>() == null) root.AddComponent<GunEffects>();
                 // A body collider makes shots hittable until Person 4 supplies its hitboxes.
                 var body = root.transform.Find("Body");
                 if (body != null && body.GetComponent<Collider>() == null)
@@ -24,5 +25,6 @@ namespace CursedCrown.Editor
         }
     }
 }
+
 
 
