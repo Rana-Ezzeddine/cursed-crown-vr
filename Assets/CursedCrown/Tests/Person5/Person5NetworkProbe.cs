@@ -159,7 +159,8 @@ namespace CursedCrown.Tests
             }
             var temp = prefix + ".tmp";
             File.WriteAllText(temp, JsonUtility.ToJson(report, true));
-            File.Copy(temp, prefix + ".json", true);
+            if (File.Exists(prefix + ".json")) File.Replace(temp, prefix + ".json", null);
+            else File.Move(temp, prefix + ".json");
         }
         void Quit()
         {

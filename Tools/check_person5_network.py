@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Opt-in real Unity process integration checks. No credentials/network services needed."""
 import argparse, json, os, pathlib, subprocess, tempfile, time
+from concurrent.futures import ThreadPoolExecutor
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 UNITY = '/Applications/Unity/Hub/Editor/6000.6.2f1/Unity.app/Contents/MacOS/Unity'
@@ -95,7 +96,8 @@ try:
     pickup(rnd=999); no_owner('stale pickup round rejected')
     move(client)
     # Both requests are sent through each peer; host serializes acceptance.
-    pickup('host'); pickup('client')
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        list(pool.map(pickup, ('host','client')))
     wait('competing requests yield one replicated carrier',lambda:match()['carried'] and match('client')['carried'] and match()['carrier']==match('client')['carrier'])
     carrier=match()['carrier']
     wait('whole-second possession points replicate',lambda:rows()[carrier]['Score']>=2 and rows('client')[carrier]['Score']==rows()[carrier]['Score'])
@@ -158,7 +160,7 @@ try:
     wait('host loss disconnects client',lambda:not match('client')['connected'])
     command('host','rejoin'); time.sleep(.5); command('client','rejoin')
     wait('fresh session has one match per peer',lambda:phase('Lobby') and all(match(n)['matchObjects']==1 and match(n)['round']==1 and match(n)['connected'] for n in ('host','client')))
-    wait('zero runtime errors across processes',lambda:all(read(n).get('errors',0)==0 for n in processes))
+    wait('zero runtime errors across processes',lambda:all(read(n).get('errors',-1)==0 for n in processes))
     summary=dict(passed=True,checks=checks,editorHost=args.editor,fullDuration=args.full_duration,reports=str(OUT))
 except Exception as ex:
     summary=dict(passed=False,checks=checks,error=str(ex),reports=str(OUT))
