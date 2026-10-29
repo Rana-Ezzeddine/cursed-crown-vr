@@ -33,6 +33,20 @@ namespace CursedCrown
             SpawnService = service;
         }
 
+        // The match system must update this before accepting hits in a new round.
+        public void SetCurrentRound(uint round)
+        {
+            if (!IsServer || currentRound == round)
+                return;
+
+            currentRound = round;
+            processedShots.Clear();
+        }
+
+        public uint CurrentRound => currentRound;
+
+        uint currentRound;
+
         public override void OnNetworkSpawn()
         {
             Health.OnValueChanged += OnHealthValueChanged;
@@ -73,7 +87,8 @@ namespace CursedCrown
             if (!IsServer || !IsSpawned)
                 return false;
 
-            if (!CanAct || hit.Target != OwnerClientId || hit.Shooter == hit.Target)
+            if (!CanAct || hit.Target != OwnerClientId || hit.Shooter == hit.Target ||
+                hit.Round != currentRound)
                 return false;
 
             string shotId = hit.Round + ":" + hit.Shooter + ":" + hit.ShotSequence;
@@ -161,7 +176,6 @@ namespace CursedCrown
                 return;
 
             StopAllCoroutines();
-            processedShots.Clear();
 
             if (!Alive.Value)
             {
