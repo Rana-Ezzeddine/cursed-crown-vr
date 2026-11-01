@@ -27,7 +27,7 @@ Reported as passing on 29 October 2026:
 - The Console had no red errors after the latest branch update.
 - **Production prefab smoke test:** After adding the components to `FoundationPlayer.prefab`, the developer ran `Arena.unity` and confirmed that the HUD appeared on the normal spawned player and was working.
 
-The production-prefab check confirms that the components load and the HUD is visible in the Arena. Real weapon raycasts, the production spawn service, round-controller integration, full multi-client damage replication, and physical Quest behaviour still require their corresponding systems and end-to-end tests.
+The production-prefab check confirms that the components load and the HUD is visible in the Arena. A temporary server-side hand-raycast shooter has now been added to the Person 4 test prefab for a two-player hit test; it still needs to be run in Unity. It does not replace Person 3's production weapon system. The production spawn service, round-controller integration, full multi-client damage replication, and physical Quest behaviour still require their corresponding systems and end-to-end tests.
 
 ## Integration still needed
 
@@ -53,5 +53,18 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 9. Click **Reset health / respawn** to restore the target for another test. For a remote client, set the target ID to its client ID.
 
 The panel simulates an already-validated hit; it does not test raycasts, cover, or Person 3's weapon code. Its spawn service reuses the starter's distinct initial spawn, so it does not test Person 2's future occupancy validation.
+
+## Two-player shooting test (temporary test shooter)
+
+The Person 4 test player prefab also has `HealthTestShooter`. It is only included in the Person 4 sandbox prefab, not the production `FoundationPlayer` prefab.
+
+1. Open `Assets/CursedCrown/Tests/Person4/Person4_Sandbox.unity` on two running game instances. Use two computers on the same LAN, or run the Editor as host and a standalone build as client. For a same-computer client, use `127.0.0.1`; for another computer, enter the host's LAN IP address.
+2. Start **Host LAN** on the first instance. Join the session from the second instance using **Join LAN**. Wait until both players have spawned.
+3. In the host's **PERSON 4 HEALTH SANDBOX** panel, set the target client ID to the other player (usually client ID 1).
+4. Aim the right hand at the other player's body. In desktop simulation, hold the right mouse button and use **Q/E** to rotate; press **Space** to shoot. On Quest, aim with the right controller and pull its trigger.
+5. Each successful hit should reduce the target's health by 25. Four hits should cause death, disable the target collider, show the five-second respawn countdown, and respawn the target with full health.
+6. Check the host Console for `Health test shot hit...`. A miss or a wall/cover hit is logged separately.
+
+This test shooter sends only a fire request to the host. The host raycasts from the shooter's replicated right-hand transform and creates the `ValidatedHit`; the existing `PlayerHealth` applies the damage. This tests the player hitbox and health path with two networked players, but not real weapon models, ammunition/recharge, or Person 3's final firing implementation. Remove or disable the test shooter after Person 3's weapon system is integrated.
 
 The sandbox scene and test prefab are branch-local copies. This feature branch also integrates Player 4's components into `FoundationPlayer.prefab`; `main`, the shared Arena scene, and teammates' files remain unchanged. The code must still be imported and played in Unity; I cannot run the Unity Editor or Quest hardware from GitHub, so runtime results must be confirmed by you.
