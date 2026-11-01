@@ -194,6 +194,7 @@ GameObject:
   - component: {fileID: 4923419256123456789}
   - component: {fileID: 5839217402856123047}
   - component: {fileID: 6781245309812476503}
+  - component: {fileID: 7812345678123456789}
   m_Layer: 0
   m_Name: Person4TestPlayer
   m_TagString: Untagged
@@ -525,3 +526,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.HealthHUD
   HealthText: {fileID: 0}
   StatusText: {fileID: 0}
+
+--- !u!114 &7812345678123456789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c47e9b0a6d3145f2b8a07c1e9f54d362, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.HealthTestShooter
