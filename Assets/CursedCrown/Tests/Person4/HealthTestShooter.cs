@@ -22,12 +22,10 @@ namespace CursedCrown
 
             bool triggerPressed = FoundationRig.Instance != null &&
                 FoundationRig.Instance.TriggerPressed;
-            bool mousePressed = Mouse.current != null &&
-                Mouse.current.leftButton.wasPressedThisFrame;
             bool spacePressed = Keyboard.current != null &&
                 Keyboard.current.spaceKey.wasPressedThisFrame;
 
-            if (triggerPressed || mousePressed || spacePressed)
+            if (triggerPressed || spacePressed)
                 RequestTestShotRpc();
         }
 
@@ -84,7 +82,7 @@ namespace CursedCrown
                 return;
 
             GUILayout.BeginArea(new Rect(20, 20, 440, 42), GUI.skin.box);
-            GUILayout.Label("HEALTH TEST SHOT: Aim with right hand, then Left Click / Space / XR Trigger");
+            GUILayout.Label("HEALTH TEST SHOT: Aim with right hand, then press Space / XR Trigger");
             GUILayout.EndArea();
         }
     }
