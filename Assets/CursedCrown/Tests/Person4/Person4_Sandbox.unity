@@ -1103,6 +1103,7 @@ GameObject:
   - component: {fileID: 692832390}
   - component: {fileID: 692832392}
   - component: {fileID: 692832391}
+  - component: {fileID: 7923756238761261345}
   m_Layer: 0
   m_Name: SESSION FOUNDATION - Person 1 extends
   m_TagString: Untagged
@@ -1165,10 +1166,10 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 692832394}
-    PlayerPrefab: {fileID: 4076124771878454447, guid: f8a8f783a15844bdca1269547f863318, type: 3}
+    PlayerPrefab: {fileID: 4076124771878454447, guid: c1e03bb12e074e8485ed223744aadd51, type: 3}
     Prefabs:
       NetworkPrefabsLists:
-      - {fileID: 11400000, guid: 8a27bb9ea6d8d491f978bc4dafd115a3, type: 2}
+      - {fileID: 11400000, guid: d3ab8e90c5e64c08a87b9f4ad6b2c771, type: 2}
     TickRate: 30
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 1
@@ -2636,3 +2637,17 @@ SceneRoots:
   - {fileID: 538492304}
   - {fileID: 692832395}
   - {fileID: 1145685423}
+
+--- !u!114 &7923756238761261345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692832389}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d24e7f0266948f9a5f5d8ca4b8c11c7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.HealthSandboxTester
+  TargetClientId: 0

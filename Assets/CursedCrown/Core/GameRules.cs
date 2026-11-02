@@ -9,7 +9,7 @@ namespace CursedCrown
         public const int ShotDamage = 25;
         public const int MaxCharge = 10;
         public const float RechargeSeconds = 2f;
-        public const float RespawnSeconds = 3f;
+        public const float RespawnSeconds = 5f;
         public const float CrownPickupDistance = 1f;
     }
 
