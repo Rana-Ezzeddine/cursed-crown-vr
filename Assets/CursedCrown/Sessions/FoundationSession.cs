@@ -17,9 +17,16 @@ namespace CursedCrown
     public sealed class FoundationSession : MonoBehaviour
     {
         public static FoundationSession Instance { get; private set; }
+
         public NetworkManager Manager { get; private set; }
+
         public string Address = "127.0.0.1";
         public ushort Port = 7777;
+
+        // NEW: Arena spawn integration
+        [Header("Arena Integration")]
+        public ArenaSpawnManager arenaSpawnManager;
+
         public string JoinCode { get; private set; } = "";
         public string Status { get; private set; } = "Choose Host or Join.";
         public SessionPhase Phase { get; private set; }
@@ -35,25 +42,34 @@ namespace CursedCrown
         readonly HashSet<ulong> players = new();
         readonly HashSet<ulong> admitted = new();
         readonly Dictionary<ulong, int> slots = new();
+
+        // NEW: Remember each player's actual reserved spawn.
+        readonly Dictionary<ulong, Pose> assignedSpawns = new();
+
         UnityTransport transport;
         SessionPhase phaseAfterStop;
+
         bool endedRaised;
         int attempt, stopFrame;
         double deadline;
         Task servicesReady;
         const double ConnectionTimeout = 20;
         const double ServicesTimeout = 45;
-
+        bool intentionalLeave;
         void Awake()
         {
             Instance = this;
+
             Application.runInBackground = true;
+
             Manager = GetComponent<NetworkManager>();
             transport = GetComponent<UnityTransport>();
+
             Manager.ConnectionApprovalCallback += Approve;
             Manager.OnClientConnectedCallback += Connected;
             Manager.OnClientDisconnectCallback += Disconnected;
             Manager.OnTransportFailure += TransportFailed;
+
             Manager.NetworkConfig.ConnectionApproval = true;
             Manager.NetworkConfig.EnableSceneManagement = false;
             Manager.NetworkConfig.TickRate = 30;
@@ -86,6 +102,28 @@ namespace CursedCrown
             return true;
         }
 
+        // =====================================================
+        // NEW: CLEAR ARENA SPAWN RESERVATIONS
+        // =====================================================
+
+        void ClearSpawnReservations()
+        {
+            if (arenaSpawnManager != null)
+            {
+                foreach (var entry in slots)
+                {
+                    arenaSpawnManager.ReleaseSpawn(entry.Value);
+                }
+            }
+
+            assignedSpawns.Clear();
+            slots.Clear();
+        }
+
+        // =====================================================
+        // LAN HOSTING / JOINING
+        // =====================================================
+
         public bool StartLan(bool host)
         {
             if (!CanStart) return false;
@@ -97,6 +135,7 @@ namespace CursedCrown
                 return false;
             }
             if (!Begin(host ? "Starting LAN host..." : "Connecting to " + address + "...", ConnectionTimeout)) return false;
+            ClearSpawnReservations();
             try
             {
                 transport.SetConnectionData(address, Port, host ? "0.0.0.0" : null);
@@ -135,6 +174,7 @@ namespace CursedCrown
                 return;
             }
             if (!Begin("Connecting to Unity services...", ServicesTimeout)) return;
+            ClearSpawnReservations();
             int current = attempt;
             try
             {
@@ -154,6 +194,8 @@ namespace CursedCrown
                     transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, "dtls"));
                     Phase = SessionPhase.Connecting;
                     deadline = Time.realtimeSinceStartupAsDouble + ConnectionTimeout;
+                    admitted.Clear();
+                    ClearSpawnReservations();
                     if (!Manager.StartHost()) throw new InvalidOperationException("Relay host start failed.");
                     if (!IsCurrent(current)) return;
                     JoinCode = createdCode;
@@ -174,29 +216,14 @@ namespace CursedCrown
             }
             catch (Exception ex)
             {
-                if (IsCurrent(current))
-                    Fail("Relay could not connect. Check internet/service access and the code; the session may be full or closed. Try again or use LAN.", ex);
+                if (currentAttempt == attempt && this != null)
+                {
+                    Status = "Relay unavailable: " + ex.Message + " Check project linking and network access, or use LAN.";
+                    Debug.LogWarning(Status);
+                    if (Manager.IsListening) Manager.Shutdown();
+                }
             }
-        }
-
-        bool IsCurrent(int current) => this != null && current == attempt && Phase != SessionPhase.Leaving;
-
-        static async Task InitializeServices()
-        {
-            await UnityServices.InitializeAsync();
-            if (AuthenticationService.Instance.IsSignedIn) return;
-            // Optional profiles keep two desktop Relay test players' saved identities separate.
-            string[] args = Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length - 1; i++)
-                if (args[i] == "-ccAuthProfile") AuthenticationService.Instance.SwitchProfile(args[i + 1]);
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        }
-
-        void Fail(string message, Exception exception)
-        {
-            // Service exception text can contain tokens/URLs. Do not copy it into UI or logs.
-            Debug.LogWarning("CC_SESSION_FAILURE " + exception.GetType().Name);
-            StopSession(message, true);
+            finally { if (this != null && currentAttempt == attempt) Busy = false; }
         }
 
         void Approve(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -205,35 +232,117 @@ namespace CursedCrown
             response.Approved = allowed;
             response.CreatePlayerObject = allowed;
             response.Pending = false;
-            response.Reason = allowed ? "" : "Session full: five players maximum.";
-            if (allowed) admitted.Add(request.ClientNetworkId);
+
+            response.Reason = allowed
+                ? ""
+                : "Session full: five players maximum.";
+
+            if (allowed)
+            {
+                admitted.Add(request.ClientNetworkId);
+            }
         }
+
+        // =====================================================
+        // UPDATED: MULTIPLAYER ARENA SPAWN ASSIGNMENT
+        // =====================================================
 
         public Pose AssignSpawn(ulong id)
         {
-            if (!Manager.IsServer) throw new InvalidOperationException("Only the host assigns spawn slots.");
+            if (!Manager.IsServer)
+            {
+                throw new InvalidOperationException(
+                    "Only the host assigns spawn slots."
+                );
+            }
+
+            // Return the same spawn if already assigned.
+            if (assignedSpawns.TryGetValue(
+                id,
+                out Pose existingSpawn))
+            {
+                return existingSpawn;
+            }
+
+            // Keep Member 1's original slot assignment.
             if (!slots.TryGetValue(id, out int slot))
             {
                 slot = 0;
-                while (slots.ContainsValue(slot) && slot < GameRules.MaxPlayers) slot++;
-                if (slot >= GameRules.MaxPlayers) throw new InvalidOperationException("No free foundation spawn.");
+
+                while (slots.ContainsValue(slot) &&
+                       slot < GameRules.MaxPlayers)
+                {
+                    slot++;
+                }
+
+                if (slot >= GameRules.MaxPlayers)
+                {
+                    throw new InvalidOperationException(
+                        "No free foundation spawn."
+                    );
+                }
+
                 slots[id] = slot;
             }
-            float angle = slot * Mathf.PI * 2 / GameRules.MaxPlayers;
-            var position = new Vector3(Mathf.Sin(angle) * 8f, .12f, Mathf.Cos(angle) * 8f);
-            return new Pose(position, Quaternion.LookRotation(-new Vector3(position.x, 0, position.z)));
+
+            // NEW: Use your ArenaSpawnManager.
+            if (arenaSpawnManager != null)
+            {
+                if (arenaSpawnManager.TryReserveSpawn(
+                    slot,
+                    out Vector3 spawnPosition,
+                    out Quaternion spawnRotation))
+                {
+                    Pose arenaSpawn = new Pose(
+                        spawnPosition,
+                        spawnRotation
+                    );
+
+                    assignedSpawns[id] = arenaSpawn;
+
+                    Debug.Log(
+                        $"Player {id} assigned arena spawn " +
+                        $"at {spawnPosition}"
+                    );
+
+                    return arenaSpawn;
+                }
+
+                Debug.LogWarning(
+                    $"No safe arena spawn available for player {id}. " +
+                    "Using foundation fallback."
+                );
+            }
+
+            // Preserve Member 1's original spawn calculation.
+            float angle =
+                slot * Mathf.PI * 2 / GameRules.MaxPlayers;
+
+            var position = new Vector3(
+                Mathf.Sin(angle) * 8f,
+                .12f,
+                Mathf.Cos(angle) * 8f
+            );
+
+            Pose fallbackSpawn = new Pose(
+                position,
+                Quaternion.LookRotation(
+                    -new Vector3(
+                        position.x,
+                        0,
+                        position.z
+                    )
+                )
+            );
+
+            assignedSpawns[id] = fallbackSpawn;
+
+            return fallbackSpawn;
         }
 
-        internal void RegisterAvatar(ulong id)
-        {
-            if (players.Add(id)) PlayerJoined?.Invoke(id);
-        }
-
-        internal void UnregisterAvatar(ulong id)
-        {
-            admitted.Remove(id); slots.Remove(id);
-            if (players.Remove(id)) PlayerLeft?.Invoke(id);
-        }
+        // =====================================================
+        // PLAYER CONNECTED
+        // =====================================================
 
         void Connected(ulong id)
         {
@@ -245,9 +354,30 @@ namespace CursedCrown
             Debug.Log("CC_CONNECTED " + id);
         }
 
+        // =====================================================
+        // UPDATED: PLAYER DISCONNECTED
+        // =====================================================
+
         void Disconnected(ulong id)
         {
             UnregisterAvatar(id);
+            admitted.Remove(id);
+
+            // NEW: Release the player's reserved arena spawn.
+            if (slots.TryGetValue(id, out int slot))
+            {
+                if (arenaSpawnManager != null)
+                {
+                    arenaSpawnManager.ReleaseSpawn(slot);
+                }
+
+                slots.Remove(id);
+            }
+
+            assignedSpawns.Remove(id);
+
+            PlayerLeft?.Invoke(id);
+
             Debug.Log("CC_DISCONNECTED " + id);
             if (Phase == SessionPhase.Leaving) return;
             if (!Manager.IsServer && id == Manager.LocalClientId)
@@ -259,11 +389,19 @@ namespace CursedCrown
             }
         }
 
+        // =====================================================
+        // TRANSPORT FAILURE
+        // =====================================================
+
         void TransportFailed()
         {
             if (Phase != SessionPhase.Leaving)
                 StopSession("Network connection failed. Check Wi-Fi/internet and network permissions, then reconnect.", true);
         }
+
+        // =====================================================
+        // UPDATED: LEAVE SESSION
+        // =====================================================
 
         public void Leave()
         {
@@ -287,7 +425,8 @@ namespace CursedCrown
         {
             // Stay in Leaving while player callbacks run; restart is safe only after cleanup.
             foreach (ulong id in new List<ulong>(players)) UnregisterAvatar(id);
-            admitted.Clear(); slots.Clear();
+            admitted.Clear();
+            ClearSpawnReservations();
             if (FoundationRig.Instance != null) FoundationRig.Instance.ResetToLobby();
             Phase = phaseAfterStop;
             if (!endedRaised)
@@ -300,6 +439,7 @@ namespace CursedCrown
         void OnDestroy()
         {
             attempt++;
+
             if (Manager != null)
             {
                 Manager.ConnectionApprovalCallback -= Approve;
@@ -307,7 +447,9 @@ namespace CursedCrown
                 Manager.OnClientDisconnectCallback -= Disconnected;
                 Manager.OnTransportFailure -= TransportFailed;
             }
-            if (Instance == this) Instance = null;
+
+            if (Instance == this)
+                Instance = null;
         }
     }
 }
