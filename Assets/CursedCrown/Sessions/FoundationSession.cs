@@ -55,7 +55,6 @@ namespace CursedCrown
         Task servicesReady;
         const double ConnectionTimeout = 20;
         const double ServicesTimeout = 45;
-        bool intentionalLeave;
         void Awake()
         {
             Instance = this;
@@ -95,7 +94,10 @@ namespace CursedCrown
             if (!CanStart) return false;
             attempt++;
             endedRaised = false;
-            admitted.Clear(); slots.Clear(); players.Clear(); JoinCode = "";
+            ClearSpawnReservations();
+            admitted.Clear();
+            players.Clear();
+            JoinCode = "";
             Phase = SessionPhase.Starting;
             Status = message;
             deadline = Time.realtimeSinceStartupAsDouble + timeout;
@@ -135,7 +137,6 @@ namespace CursedCrown
                 return false;
             }
             if (!Begin(host ? "Starting LAN host..." : "Connecting to " + address + "...", ConnectionTimeout)) return false;
-            ClearSpawnReservations();
             try
             {
                 transport.SetConnectionData(address, Port, host ? "0.0.0.0" : null);
@@ -174,7 +175,6 @@ namespace CursedCrown
                 return;
             }
             if (!Begin("Connecting to Unity services...", ServicesTimeout)) return;
-            ClearSpawnReservations();
             int current = attempt;
             try
             {
@@ -195,7 +195,6 @@ namespace CursedCrown
                     Phase = SessionPhase.Connecting;
                     deadline = Time.realtimeSinceStartupAsDouble + ConnectionTimeout;
                     admitted.Clear();
-                    ClearSpawnReservations();
                     if (!Manager.StartHost()) throw new InvalidOperationException("Relay host start failed.");
                     if (!IsCurrent(current)) return;
                     JoinCode = createdCode;
@@ -216,14 +215,47 @@ namespace CursedCrown
             }
             catch (Exception ex)
             {
-                if (currentAttempt == attempt && this != null)
-                {
-                    Status = "Relay unavailable: " + ex.Message + " Check project linking and network access, or use LAN.";
-                    Debug.LogWarning(Status);
-                    if (Manager.IsListening) Manager.Shutdown();
-                }
+                if (IsCurrent(current))
+                    Fail("Relay unavailable. Check project linking and network access, or use LAN.", ex);
             }
-            finally { if (this != null && currentAttempt == attempt) Busy = false; }
+        }
+
+        bool IsCurrent(int current)
+        {
+            return this != null && current == attempt &&
+                   Phase != SessionPhase.Leaving && Phase != SessionPhase.Failed;
+        }
+
+        static async Task InitializeServices()
+        {
+            await UnityServices.InitializeAsync();
+            if (!AuthenticationService.Instance.IsSignedIn)
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
+
+        void Fail(string message, Exception ex)
+        {
+            Debug.LogError(message + " " + ex);
+            if (Manager != null && (Manager.IsListening || Manager.ShutdownInProgress))
+                StopSession(message, true);
+            else
+            {
+                Phase = SessionPhase.Failed;
+                Status = message;
+            }
+        }
+
+        // Called by FoundationAvatar when a networked avatar appears/disappears.
+        public void RegisterAvatar(ulong id)
+        {
+            if (players.Add(id))
+                PlayerJoined?.Invoke(id);
+        }
+
+        public void UnregisterAvatar(ulong id)
+        {
+            if (players.Remove(id))
+                PlayerLeft?.Invoke(id);
         }
 
         void Approve(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
@@ -375,8 +407,6 @@ namespace CursedCrown
             }
 
             assignedSpawns.Remove(id);
-
-            PlayerLeft?.Invoke(id);
 
             Debug.Log("CC_DISCONNECTED " + id);
             if (Phase == SessionPhase.Leaving) return;
