@@ -9,6 +9,7 @@ namespace CursedCrown
     public sealed class HealthTestShooter : NetworkBehaviour
     {
         const float MaxShotDistance = 30f;
+        [SerializeField] bool useXRTrigger = true;
         uint nextShotSequence = 1;
 
         void Update()
@@ -20,7 +21,12 @@ namespace CursedCrown
             if (player == null || !player.CanAct)
                 return;
 
-            bool triggerPressed = FoundationRig.Instance != null &&
+            MatchController match = MatchController.Instance;
+            if (match != null && match.Phase != MatchPhase.Playing)
+                return;
+
+            bool triggerPressed = useXRTrigger &&
+                FoundationRig.Instance != null &&
                 FoundationRig.Instance.TriggerPressed;
             bool spacePressed = Keyboard.current != null &&
                 Keyboard.current.spaceKey.wasPressedThisFrame;
@@ -34,6 +40,11 @@ namespace CursedCrown
         {
             if (!IsServer || !IsSpawned ||
                 rpcParams.Receive.SenderClientId != OwnerClientId)
+                return;
+
+            MatchController match = MatchController.Instance;
+            if (match != null && (!match.IsSpawned || !match.IsServer ||
+                match.Phase != MatchPhase.Playing))
                 return;
 
             PlayerHealth shooter = GetComponent<PlayerHealth>();
@@ -66,7 +77,11 @@ namespace CursedCrown
                     shooter.CurrentRound, OwnerClientId, target.OwnerClientId,
                     nextShotSequence++, hit.point);
 
-                bool accepted = target.ApplyValidatedHit(validatedHit);
+                Person5HealthBridge bridge = match != null
+                    ? match.GetComponent<Person5HealthBridge>() : null;
+                bool accepted = bridge != null
+                    ? bridge.TryApplyValidatedHit(validatedHit)
+                    : target.ApplyValidatedHit(validatedHit);
                 Debug.Log("Health test shot hit client " + target.OwnerClientId +
                     ". Accepted: " + accepted + "; health: " +
                     target.CurrentHealth + "/" + GameRules.MaxHealth);
@@ -82,7 +97,7 @@ namespace CursedCrown
                 return;
 
             GUILayout.BeginArea(new Rect(20, 20, 440, 42), GUI.skin.box);
-            GUILayout.Label("HEALTH TEST SHOT: Aim with right hand, then press Space / XR Trigger");
+            GUILayout.Label("HEALTH TEST SHOT: Aim with right hand, then press Space (desktop) or XR Trigger");
             GUILayout.EndArea();
         }
     }
