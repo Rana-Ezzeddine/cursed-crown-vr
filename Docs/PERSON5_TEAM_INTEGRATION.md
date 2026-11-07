@@ -15,7 +15,7 @@ Rig/avatar integration preserves B-menu and A-teleport behavior and adds grip pi
 
 ## Combined scene and reproduction
 
-Open `Assets/CursedCrown/Tests/Person5/Person5_ArenaIntegration.unity` in Unity 6000.6.2f1. It copies P2's arena and uses the production FoundationPlayer with P4 health, an arena service adapter, match bootstrap and crown/HUD. Both AllowMockAlive and AllowDesktopPickup are false in the saved match prefab. The old visual crown placeholder is disabled.
+Open `Assets/CursedCrown/Tests/Person5/Person5_ArenaIntegration.unity` in Unity 6000.6.2f1. It copies P2's arena and uses the production FoundationPlayer with P4 health, an arena service adapter, match bootstrap and crown/HUD. Both AllowMockAlive and AllowDesktopPickup are false in the saved match prefab. The old visual crown placeholder is disabled. A dedicated Person5ArenaNetworkPrefabs registry contains only the production player and match prefabs; the scene does not depend on Unity auto-populating the shared default registry.
 
 Run `CursedCrown.Editor.Person5ArenaSetup.Build` with Unity's batch executeMethod option to regenerate the scene and build `Builds/Person5ArenaIntegration.app`. Then run `python3 Tools/check_person5_network.py --arena`.
 

@@ -52,7 +52,7 @@
   "fullDuration": false,
   "realHealth": true,
   "arena": true,
-  "reports": "/var/folders/sz/d1m99s3j7_dfbbl3yyp0k26w0000gn/T/person5-network-xoddlgax",
+  "reports": "/var/folders/sz/d1m99s3j7_dfbbl3yyp0k26w0000gn/T/person5-network-9trb867m",
   "date": "2026-11-07",
   "unity": "6000.6.2f1",
   "baseIntegration": "b19f372832e3b692409ae4312a1640a75d06c467",
@@ -124,7 +124,7 @@
       "carrier": 0,
       "remaining": 0.0,
       "deadline": 0.0,
-      "serverTime": 46.414605244919656,
+      "serverTime": 46.98992843475193,
       "roundSeconds": 15.0,
       "crown": {
         "x": 0.0,
@@ -207,7 +207,7 @@
       "carrier": 0,
       "remaining": 0.0,
       "deadline": 0.0,
-      "serverTime": 46.35006435986609,
+      "serverTime": 46.9377737123395,
       "roundSeconds": 240.0,
       "crown": {
         "x": 0.0,
@@ -290,7 +290,7 @@
       "carrier": 0,
       "remaining": 0.0,
       "deadline": 0.0,
-      "serverTime": 46.34333720589677,
+      "serverTime": 46.982551437119646,
       "roundSeconds": 240.0,
       "crown": {
         "x": 0.0,
@@ -342,7 +342,7 @@
     "Assets/CursedCrown/Editor/FoundationChecks.cs": "e4c0e5e583750eac667eaff4e78eee4d852e1c951b4d6de8ccf273644312b723",
     "Assets/CursedCrown/Editor/Person5HealthSetup.cs": "80fd3ebba988a7baba5cbcc9ed950d28e92cbe89c51560207379df85821afb39",
     "Assets/CursedCrown/Editor/MemberOneChecks.cs": "5ad86918dabc31b70259c83df4b1e06f1f8807d92f00e7c4dc39ebf0cd3baac8",
-    "Assets/CursedCrown/Editor/Person5ArenaSetup.cs": "0850c851d58f8a37ed652ba339adc4783c1b47edb2cb33ca071166cc5a17db09",
+    "Assets/CursedCrown/Editor/Person5ArenaSetup.cs": "c3c377dea79cae65e2329fe30f95bdec225f797cf57ef60e7b776dbaf34da3c3",
     "Assets/CursedCrown/Editor/FoundationAutomation.cs": "731fe216d808fe7781f43ff4a4955d749569c675676fa263a3ea93f6f39b74af",
     "Assets/CursedCrown/Editor/Person5Setup.cs": "e874043d02883d01d102a223bab9b236df21825baa25059b1dfe91e8d84d81ed",
     "Assets/CursedCrown/Editor/Person5PlayMode.cs": "90416714aeb20ed285abf5cb79f9eb3c0db9f155938f330a5c73e3e9a7fb925f",
@@ -355,6 +355,10 @@
     "Assets/CursedCrown/Tests/Person5/Person5NetworkProbe.cs": "1f93434da480c6c569d0eead67b50f355211ef07e35dfe3f9d3d8bffac7ded12",
     "Assets/CursedCrown/Tests/Person4/HealthSandboxTester.cs": "c5bf2e89d5f31c50bbad35bf343b0a8e85d68aea32dd25cb468e9784c3c3daac",
     "Assets/CursedCrown/Tests/Person4/HealthTestShooter.cs": "525bf43354ddb3b95e19bcf46de2dbc032b8e1a8b95e1b1978341f1fe76efb70",
-    "Tools/check_person5_network.py": "88c1cc7d2e1f367b21754c4aaa0d8e4c02b5272bd5efd88fca7fad819505c0a7"
-  }
+    "Tools/check_person5_network.py": "88c1cc7d2e1f367b21754c4aaa0d8e4c02b5272bd5efd88fca7fad819505c0a7",
+    "Assets/CursedCrown/Tests/Person5/Person5_ArenaIntegration.unity": "a8533048eb51adb4dc9bcc41436db30f6f22e4a20902360d799cca1dd492b870",
+    "Assets/CursedCrown/Tests/Person5/Person5ArenaMatch.prefab": "4e6c855972e9b90a9231a51a17a1ff9cac8d0919883e026e52b339d75ac8781c",
+    "Assets/CursedCrown/Tests/Person5/Person5ArenaNetworkPrefabs.asset": "1541e2f5de9bc39d3930988eaf4034b8d10896da1e69e0e899d0910d10be1cfc"
+  },
+  "explicitSceneRegistry": true
 }

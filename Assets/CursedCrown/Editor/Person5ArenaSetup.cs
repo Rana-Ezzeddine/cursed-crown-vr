@@ -34,7 +34,21 @@ namespace CursedCrown.Editor
             var prefab = PrefabUtility.SaveAsPrefabAsset(root, "Assets/CursedCrown/Tests/Person5/Person5ArenaMatch.prefab");
             Object.DestroyImmediate(root);
             new GameObject("Match Bootstrap").AddComponent<MatchBootstrap>().MatchPrefab = prefab;
-            session.GetComponent<NetworkManager>().NetworkConfig.PlayerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(StarterSetup.PlayerPath);
+            var config = session.GetComponent<NetworkManager>().NetworkConfig;
+            config.PlayerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(StarterSetup.PlayerPath);
+            const string registryPath = "Assets/CursedCrown/Tests/Person5/Person5ArenaNetworkPrefabs.asset";
+            var registry = AssetDatabase.LoadAssetAtPath<NetworkPrefabsList>(registryPath);
+            if (registry == null)
+            {
+                registry = ScriptableObject.CreateInstance<NetworkPrefabsList>();
+                AssetDatabase.CreateAsset(registry, registryPath);
+            }
+            while (registry.PrefabList.Count > 0) registry.Remove(registry.PrefabList[0]);
+            registry.Add(new NetworkPrefab { Prefab = config.PlayerPrefab });
+            registry.Add(new NetworkPrefab { Prefab = prefab });
+            EditorUtility.SetDirty(registry);
+            config.Prefabs.NetworkPrefabsLists.Clear();
+            config.Prefabs.NetworkPrefabsLists.Add(registry);
             EditorSceneManager.SaveScene(scene, Scene);
             AssetDatabase.SaveAssets();
             Debug.Log("CC_PERSON5_ARENA_PREPARED");
