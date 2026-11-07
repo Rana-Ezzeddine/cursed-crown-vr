@@ -14,8 +14,10 @@ namespace CursedCrown
         public bool AutomatedMotion;
         public bool IsTracked { get; private set; }
         public bool TriggerPressed { get; private set; }
+        public bool PickupPressed { get; private set; }
+        public bool RightTracked { get; private set; }
         readonly List<XRInputSubsystem> subsystems = new();
-        bool lastTrigger, floorOrigin;
+        bool lastTrigger, lastPickup, floorOrigin;
         float retryOrigin, desktopYaw;
         Vector3 desktopOffset;
         void Awake() { Instance = this; }
@@ -30,13 +32,16 @@ namespace CursedCrown
             }
             var head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
             IsTracked = head.isValid && head.TryGetFeatureValue(UnityEngine.XR.CommonUsages.isTracked, out var tracked) && tracked;
-            bool trigger = false;
+            bool trigger = false, pickup = false;
+            var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            RightTracked = IsTracked && right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.isTracked, out var rightTracked) && rightTracked;
             if (IsTracked)
             {
                 Track(XRNode.Head,Head);
                 Track(XRNode.LeftHand,LeftHand);
                 Track(XRNode.RightHand,RightHand);
-                InputDevices.GetDeviceAtXRNode(XRNode.RightHand).TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton,out trigger);
+                right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton,out trigger);
+                if (RightTracked) right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.gripButton, out pickup);
             }
             else
             {
@@ -56,6 +61,7 @@ namespace CursedCrown
                 LeftHand.localRotation=RightHand.localRotation=Head.localRotation;
             }
             TriggerPressed=trigger&&!lastTrigger;lastTrigger=trigger;
+            PickupPressed=pickup&&!lastPickup;lastPickup=pickup;
         }
         void Track(XRNode node,Transform target)
         {
@@ -64,7 +70,7 @@ namespace CursedCrown
             if(input.TryGetFeatureValue(UnityEngine.XR.CommonUsages.deviceRotation,out var q))target.localRotation=q;
         }
         public AvatarPose ReadPose() => new AvatarPose { Head=Head.localPosition,Left=LeftHand.localPosition,Right=RightHand.localPosition,
-            HeadRotation=Head.localRotation,LeftRotation=LeftHand.localRotation,RightRotation=RightHand.localRotation };
+            HeadRotation=Head.localRotation,LeftRotation=LeftHand.localRotation,RightRotation=RightHand.localRotation, RightTracked=RightTracked };
         void OnDestroy() { if(Instance==this)Instance=null; }
     }
 }
