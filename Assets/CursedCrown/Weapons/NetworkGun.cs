@@ -84,14 +84,22 @@ namespace CursedCrown
         {
             if (!IsServer) ShotFired?.Invoke(OwnerClientId, origin, end);
         }
-        public void ResetRound()
+        // P5 owns the authoritative match round; align the gun to that ID.
+        public void SetRound(uint round)
         {
-            if (!IsServer) return;
-            Round++;
+            if (!IsServer || Round == round) return;
+
+            Round = round;
             sequence = 0;
             nextShot = rechargeEnd = 0;
             Recharging.Value = false;
             Charge.Value = GameRules.MaxCharge;
+        }
+
+        public void ResetRound()
+        {
+            if (!IsServer || Round == uint.MaxValue) return;
+            SetRound(Round + 1);
         }
     }
 }
