@@ -6,13 +6,14 @@ namespace CursedCrown
     public struct AvatarPose : INetworkSerializable, System.IEquatable<AvatarPose>
     {
         public Vector3 Head, Left, Right;
+        public bool RightTracked;
         public Quaternion HeadRotation, LeftRotation, RightRotation;
         public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
         {
-            s.SerializeValue(ref Head); s.SerializeValue(ref Left); s.SerializeValue(ref Right);
+            s.SerializeValue(ref RightTracked); s.SerializeValue(ref Head); s.SerializeValue(ref Left); s.SerializeValue(ref Right);
             s.SerializeValue(ref HeadRotation); s.SerializeValue(ref LeftRotation); s.SerializeValue(ref RightRotation);
         }
-        public bool Equals(AvatarPose p) => Head == p.Head && Left == p.Left && Right == p.Right &&
+        public bool Equals(AvatarPose p) => RightTracked == p.RightTracked && Head == p.Head && Left == p.Left && Right == p.Right &&
             HeadRotation == p.HeadRotation && LeftRotation == p.LeftRotation && RightRotation == p.RightRotation;
         public bool IsValid() => ValidVector(Head) && ValidVector(Left) && ValidVector(Right) &&
             ValidRotation(HeadRotation) && ValidRotation(LeftRotation) && ValidRotation(RightRotation) &&
