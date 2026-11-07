@@ -1,6 +1,7 @@
 using System;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.XR;
 
 namespace CursedCrown
@@ -31,13 +32,26 @@ namespace CursedCrown
                 Recharging.Value = false;
                 Charge.Value = GameRules.MaxCharge;
             }
+
             if (!IsSpawned || !IsOwner) return;
+
             var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-            bool fire = right.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed) && pressed;
+            bool xrFire = right.isValid &&
+                right.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed) && pressed;
+            bool keyboardFire = Keyboard.current != null &&
+                Keyboard.current.spaceKey.isPressed;
+            bool fire = xrFire || keyboardFire;
+
             if (fire && !triggerHeld) FireRpc();
             triggerHeld = fire;
+
             var left = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
-            bool reload = left.TryGetFeatureValue(CommonUsages.secondaryButton, out bool button) && button;
+            bool xrReload = left.isValid &&
+                left.TryGetFeatureValue(CommonUsages.secondaryButton, out bool button) && button;
+            bool keyboardReload = Keyboard.current != null &&
+                Keyboard.current.rKey.wasPressedThisFrame;
+            bool reload = xrReload || keyboardReload;
+
             if (reload && !reloadHeld) RechargeRpc();
             reloadHeld = reload;
         }
