@@ -27,7 +27,7 @@ Reported as passing on 29 October 2026:
 - The Console had no red errors after the latest branch update.
 - **Production prefab smoke test:** After adding the components to `FoundationPlayer.prefab`, the developer ran `Arena.unity` and confirmed that the HUD appeared on the normal spawned player and was working.
 
-The production-prefab check confirms that the components load and the HUD is visible in the Arena. A temporary server-side hand-raycast shooter has now been added to the Person 4 test prefab for a two-player hit test; it still needs to be run in Unity. It does not replace Person 3's production weapon system. The production spawn service, round-controller integration, full multi-client damage replication, and physical Quest behaviour still require their corresponding systems and end-to-end tests.
+The production-prefab check confirms that the components load and the HUD is visible in the Arena. The isolated team-integration branch now includes P3's host-authoritative `NetworkGun`, its hit event connection to P4 health, and P5 match/round coordination. Those combined connections still need a two-client Unity run. P2's production safe-spawn/drop service, P1's separate networking review, and physical Quest behaviour are not validated by the source-level integration.
 
 ## Integration status on this branch
 
@@ -51,7 +51,7 @@ The `Person4MatchHealthIntegration` component on the match prefab performs the P
 - Forwards P4 death events to P5's match controller so a carrier can drop the crown.
 - Provides a temporary spawn adapter using the starter's existing `FoundationSession.AssignSpawn`. This is only to test P4's respawn loop in this scene; it does **not** replace P2's safe arena spawn/drop service.
 
-For desktop Play Mode in this integration branch only, `NetworkGun` accepts **Space** to fire and **R` to recharge; Quest continues to use the right trigger and left secondary button. Aim by holding the right mouse button and using **Q/E** to rotate the desktop rig. The network gun still performs its raycast and emits the same validated-hit event on the host.
+For desktop Play Mode in this integration branch only, `NetworkGun` accepts **Space** to fire and **R** to recharge; Quest continues to use the right trigger and left secondary button. Aim by holding the right mouse button and using **Q/E** to rotate the desktop rig. The network gun still performs its raycast and emits the same validated-hit event on the host.
 
 ### Run the team integration test
 
