@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2915677036531673815}
   - component: {fileID: 2487941876570243876}
   - component: {fileID: 7108127393286260709}
+  - component: {fileID: 9101827364558273645}
   m_Layer: 0
   m_Name: Person5HealthMatch
   m_TagString: Untagged
@@ -90,3 +91,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c0d0e785a5a34f89881e0d2636e9c34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.Person5HealthBridge
+
+--- !u!114 &9101827364558273645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6587637055470125064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f2c8b7d1a3e4c6f9b0d2e5a7c8f1346, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.Person4MatchHealthIntegration
