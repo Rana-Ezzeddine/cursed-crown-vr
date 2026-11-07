@@ -38,6 +38,40 @@ The production-prefab check confirms that the components load and the HUD is vis
 5. Members 2, 3, and 5 should check `CanAct` before allowing teleport, firing, or crown pickup. `IsAlive` remains available when they only need the alive state.
 6. `HealthHUD` creates a small World Space Canvas in front of the local player's tracked head. It is attached to both the sandbox test prefab and the production player prefab on this branch.
 
+## P4 + P3 + P5 team integration test
+
+A separate integration scene is available at `Assets/CursedCrown/Tests/Person4/Person4_TeamIntegration.unity`. It is based on the isolated P5 health/match scene and uses a dedicated combined player prefab, so it does not replace the team's shared Arena scene.
+
+The combined `Person4TeamPlayer.prefab` contains P3's `NetworkGun` and `GunEffects`, plus P4's `PlayerHealth`, `HealthHUD`, root capsule hitbox, and body collider. The temporary `HealthTestShooter` is disabled on this prefab so it cannot double-apply damage. The ordinary P4 sandbox retains that separate test shooter.
+
+The `Person4MatchHealthIntegration` component on the match prefab performs the P4-side connections:
+- Subscribes to P3's host-side `NetworkGun.HitValidated` event and forwards the validated hit through P5's `Person5HealthBridge` to `PlayerHealth.ApplyValidatedHit`.
+- Supplies P3's `IPlayerState` and `IMatchState` references from the P5 bridge and match controller.
+- Synchronizes P3 gun round IDs and P4 player-health round IDs to P5's authoritative match round, including late-spawned players.
+- Forwards P4 death events to P5's match controller so a carrier can drop the crown.
+- Provides a temporary spawn adapter using the starter's existing `FoundationSession.AssignSpawn`. This is only to test P4's respawn loop in this scene; it does **not** replace P2's safe arena spawn/drop service.
+
+For desktop Play Mode in this integration branch only, `NetworkGun` accepts **Space** to fire and **R` to recharge; Quest continues to use the right trigger and left secondary button. Aim by holding the right mouse button and using **Q/E** to rotate the desktop rig. The network gun still performs its raycast and emits the same validated-hit event on the host.
+
+### Run the team integration test
+
+1. Pull `feature/p4-team-integration` and open `Assets/CursedCrown/Tests/Person4/Person4_TeamIntegration.unity`.
+2. Run two game instances. Start **Host LAN** in one and **Join LAN** from the other. Use `127.0.0.1` for a second instance on the same computer, or the host's LAN IP on another computer.
+3. Wait for both players to spawn. Each instance should show its local health HUD.
+4. In the match panel, each player selects **Ready**. The host then selects **Start when everyone is ready**.
+5. Aim at the other player's body. Press **Space** to fire on desktop, or pull the right-controller trigger on Quest. On desktop, hold the right mouse button and press **Q/E** to turn the rig toward the other player.
+6. Each accepted shot should subtract 25 HP from the target. Four hits should trigger death, collider disabling, the five-second HUD countdown, and respawn with 100 HP.
+7. Restart the match from the host panel after the round finishes. Verify that the new round accepts shots again and that health/charge reset.
+8. Confirm that cover blocks the shot and that a dead player cannot fire or carry the crown.
+
+The test scene intentionally uses the P5 match prefab and P4 integration bridge but a dedicated player prefab. It must be imported and run in Unity to validate compile-time and runtime behavior; source-level checks are not a substitute for that run.
+
+### Integration boundary / still pending
+
+- **P2 spawn/drop integration remains pending.** The current P4 adapter uses the foundation's stable spawn assignment to exercise respawn. Replace it with P2's registered safe `ISpawnService` when the P2 branch is integrated; also test crown-drop safety through P2's service.
+- **P1 session branch is not merged into this scene.** This integration scene uses the session implementation already present in the P5 test scene. It is not intended to review or replace P1's networking work.
+- This branch is a review/test combination only. Do not merge it automatically into any role branch. The role owners should review their source contributions before the team chooses an integration target.
+
 ## Sandbox test
 
 The Person 4 sandbox has its own copy of the player prefab and a simple host-only test panel. The production `FoundationPlayer` prefab also has the Player 4 components on this feature branch; the shared Arena scene and `main` branch are unchanged.
