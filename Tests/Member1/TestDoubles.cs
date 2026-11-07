@@ -13,6 +13,8 @@ namespace UnityEngine
     }
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class RequireComponent : Attribute { public RequireComponent(Type a, Type b) { } }
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class HeaderAttribute : Attribute { public HeaderAttribute(string text) { } }
     public static class Application { public static bool runInBackground; public static string cloudProjectId = "test-project"; }
     public static class Time { public static double realtimeSinceStartupAsDouble; public static int frameCount; }
     public static class Debug
@@ -140,6 +142,17 @@ namespace Unity.Services.Relay
 }
 namespace CursedCrown
 {
+    public sealed class ArenaSpawnManager
+    {
+        public bool TryReserveSpawn(int slot, out UnityEngine.Vector3 position, out UnityEngine.Quaternion rotation)
+        {
+            position = new UnityEngine.Vector3();
+            rotation = new UnityEngine.Quaternion();
+            return false;
+        }
+        public void ReleaseSpawn(int slot) { }
+    }
+
     public sealed class FoundationRig
     {
         public static FoundationRig Instance = new FoundationRig();
@@ -147,3 +160,4 @@ namespace CursedCrown
         public void ResetToLobby() { Resets++; }
     }
 }
+

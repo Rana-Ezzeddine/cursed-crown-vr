@@ -229,13 +229,21 @@ namespace CursedCrown
         static async Task InitializeServices()
         {
             await UnityServices.InitializeAsync();
-            if (!AuthenticationService.Instance.IsSignedIn)
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            if (AuthenticationService.Instance.IsSignedIn) return;
+
+            // Keep simultaneous desktop Relay test players on separate saved identities.
+            string[] args = Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length - 1; i++)
+                if (args[i] == "-ccAuthProfile")
+                    AuthenticationService.Instance.SwitchProfile(args[i + 1]);
+
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
         }
 
         void Fail(string message, Exception ex)
         {
-            Debug.LogError(message + " " + ex);
+            // Service exceptions can contain URLs or token-like values. Log only the type.
+            Debug.LogWarning("CC_SESSION_FAILURE " + ex.GetType().Name);
             if (Manager != null && (Manager.IsListening || Manager.ShutdownInProgress))
                 StopSession(message, true);
             else
@@ -254,6 +262,18 @@ namespace CursedCrown
 
         public void UnregisterAvatar(ulong id)
         {
+            admitted.Remove(id);
+
+            if (slots.TryGetValue(id, out int slot))
+            {
+                if (arenaSpawnManager != null)
+                    arenaSpawnManager.ReleaseSpawn(slot);
+
+                slots.Remove(id);
+            }
+
+            assignedSpawns.Remove(id);
+
             if (players.Remove(id))
                 PlayerLeft?.Invoke(id);
         }
@@ -395,20 +415,6 @@ namespace CursedCrown
         void Disconnected(ulong id)
         {
             UnregisterAvatar(id);
-            admitted.Remove(id);
-
-            // NEW: Release the player's reserved arena spawn.
-            if (slots.TryGetValue(id, out int slot))
-            {
-                if (arenaSpawnManager != null)
-                {
-                    arenaSpawnManager.ReleaseSpawn(slot);
-                }
-
-                slots.Remove(id);
-            }
-
-            assignedSpawns.Remove(id);
 
             Debug.Log("CC_DISCONNECTED " + id);
             if (Phase == SessionPhase.Leaving) return;
