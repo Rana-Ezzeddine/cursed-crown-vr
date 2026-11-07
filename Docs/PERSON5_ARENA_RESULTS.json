@@ -1,0 +1,360 @@
+{
+  "passed": true,
+  "checks": [
+    "real-health host spawns",
+    "real health replicated on both player objects",
+    "real health integration disables mock alive",
+    "lobby hit rejected by round/phase bridge",
+    "production arena services registered",
+    "host health rounds synchronized",
+    "both ready replicated",
+    "playing replicated",
+    "arena rejects untracked pickup by default",
+    "real living player carries crown",
+    "stale validated hit rejected",
+    "real damage replicates 100 to 75",
+    "real duplicate hit rejected",
+    "real carrier scores a full second",
+    "real death drops crown on both peers",
+    "real dead player cannot pick up crown",
+    "production crown drop is safe and replicated",
+    "real respawn restores replicated alive and health with P2 spawn service",
+    "real-health round finishes",
+    "restart advances round and preserves connections",
+    "reset clears score, readiness and ownership",
+    "real reset restores health",
+    "restart updates all health rounds",
+    "late join health receives current round",
+    "late player leaves cleanly",
+    "previous-round health action rejected after reset",
+    "both ready replicated",
+    "playing replicated",
+    "second real death observed",
+    "match finishes before pending respawn",
+    "restart advances round and preserves connections",
+    "reset clears score, readiness and ownership",
+    "reset cancels pending death and restores alive state",
+    "old respawn timer does not alter new lobby",
+    "both ready replicated",
+    "playing replicated",
+    "new-round carrier acquired",
+    "mid-match join receives round and crown",
+    "carrier disconnect drops through real arena service",
+    "disconnected client finishes shutdown",
+    "rejoin receives current round and health",
+    "rosters remain unique on every connected peer",
+    "third round finishes on all peers",
+    "restart advances round and preserves connections",
+    "reset clears score, readiness and ownership",
+    "real-health processes report zero runtime errors"
+  ],
+  "editorHost": false,
+  "fullDuration": false,
+  "realHealth": true,
+  "arena": true,
+  "reports": "/var/folders/sz/d1m99s3j7_dfbbl3yyp0k26w0000gn/T/person5-network-xoddlgax",
+  "date": "2026-11-07",
+  "unity": "6000.6.2f1",
+  "baseIntegration": "b19f372832e3b692409ae4312a1640a75d06c467",
+  "person4": "8875993eb8be9f856b8ca81998d67999b861c399",
+  "person5": "a9c6f0fc3dbe6e8b6823016802548d6265cb3675",
+  "checkCount": 46,
+  "pureRuleAssertions": 1546,
+  "unityBuild": "passed",
+  "limitations": [
+    "Development driver injects validated damage; no production weapons.",
+    "Driver moves avatar roots and enables desktop pickup only after testing the default rejection.",
+    "No physical headset, Android, Relay, five-player, or teleport input acceptance in this run.",
+    "P1 standalone test project remains incompatible with the inherited arena dependency."
+  ],
+  "initialFailure": "First combined run duplicated a joining player in the client roster. Fixed changed-roster publication; rerun passed.",
+  "peerReports": {
+    "host": {
+      "mode": "host",
+      "phase": "Lobby",
+      "result": "",
+      "error": "",
+      "ack": 23,
+      "errors": 0,
+      "resets": 3,
+      "matchObjects": 1,
+      "connected": true,
+      "carried": false,
+      "accepted": false,
+      "mockAlive": false,
+      "realArenaServices": true,
+      "safeArenaDrop": false,
+      "health": [
+        {
+          "id": 0,
+          "hp": 100,
+          "alive": true,
+          "round": 4,
+          "root": {
+            "x": 0.0,
+            "y": 0.11999999731779099,
+            "z": 8.0
+          }
+        },
+        {
+          "id": 3,
+          "hp": 100,
+          "alive": true,
+          "round": 4,
+          "root": {
+            "x": 4.702281475067139,
+            "y": 0.11999999731779099,
+            "z": -6.472136497497559
+          }
+        },
+        {
+          "id": 4,
+          "hp": 100,
+          "alive": true,
+          "round": 4,
+          "root": {
+            "x": 7.608452320098877,
+            "y": 0.11999999731779099,
+            "z": 2.4721357822418213
+          }
+        }
+      ],
+      "round": 4,
+      "localId": 0,
+      "carrier": 0,
+      "remaining": 0.0,
+      "deadline": 0.0,
+      "serverTime": 46.414605244919656,
+      "roundSeconds": 15.0,
+      "crown": {
+        "x": 0.0,
+        "y": 1.350000023841858,
+        "z": 0.0
+      },
+      "scores": [
+        {
+          "Id": 0,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        },
+        {
+          "Id": 3,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        },
+        {
+          "Id": 4,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        }
+      ]
+    },
+    "client": {
+      "mode": "client",
+      "phase": "Lobby",
+      "result": "",
+      "error": "",
+      "ack": 10,
+      "errors": 0,
+      "resets": 0,
+      "matchObjects": 0,
+      "connected": false,
+      "carried": false,
+      "accepted": false,
+      "mockAlive": false,
+      "realArenaServices": true,
+      "safeArenaDrop": false,
+      "health": [
+        {
+          "id": 0,
+          "hp": 100,
+          "alive": true,
+          "round": 0,
+          "root": {
+            "x": 0.0,
+            "y": 0.11999999731779099,
+            "z": 8.0
+          }
+        },
+        {
+          "id": 3,
+          "hp": 100,
+          "alive": true,
+          "round": 0,
+          "root": {
+            "x": 4.702281475067139,
+            "y": 0.11999999731779099,
+            "z": -6.472136497497559
+          }
+        },
+        {
+          "id": 4,
+          "hp": 100,
+          "alive": true,
+          "round": 0,
+          "root": {
+            "x": 7.608452320098877,
+            "y": 0.11999999731779099,
+            "z": 2.4721357822418213
+          }
+        }
+      ],
+      "round": 4,
+      "localId": 0,
+      "carrier": 0,
+      "remaining": 0.0,
+      "deadline": 0.0,
+      "serverTime": 46.35006435986609,
+      "roundSeconds": 240.0,
+      "crown": {
+        "x": 0.0,
+        "y": 1.350000023841858,
+        "z": 0.0
+      },
+      "scores": [
+        {
+          "Id": 0,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        },
+        {
+          "Id": 3,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        },
+        {
+          "Id": 4,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        }
+      ]
+    },
+    "late": {
+      "mode": "client",
+      "phase": "Lobby",
+      "result": "",
+      "error": "",
+      "ack": 3,
+      "errors": 0,
+      "resets": 0,
+      "matchObjects": 0,
+      "connected": false,
+      "carried": false,
+      "accepted": false,
+      "mockAlive": false,
+      "realArenaServices": true,
+      "safeArenaDrop": false,
+      "health": [
+        {
+          "id": 0,
+          "hp": 100,
+          "alive": true,
+          "round": 0,
+          "root": {
+            "x": 0.0,
+            "y": 0.11999999731779099,
+            "z": 8.0
+          }
+        },
+        {
+          "id": 3,
+          "hp": 100,
+          "alive": true,
+          "round": 0,
+          "root": {
+            "x": 4.702281475067139,
+            "y": 0.11999999731779099,
+            "z": -6.472136497497559
+          }
+        },
+        {
+          "id": 4,
+          "hp": 100,
+          "alive": true,
+          "round": 0,
+          "root": {
+            "x": 7.608452320098877,
+            "y": 0.11999999731779099,
+            "z": 2.4721357822418213
+          }
+        }
+      ],
+      "round": 4,
+      "localId": 0,
+      "carrier": 0,
+      "remaining": 0.0,
+      "deadline": 0.0,
+      "serverTime": 46.34333720589677,
+      "roundSeconds": 240.0,
+      "crown": {
+        "x": 0.0,
+        "y": 1.350000023841858,
+        "z": 0.0
+      },
+      "scores": [
+        {
+          "Id": 0,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        },
+        {
+          "Id": 3,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        },
+        {
+          "Id": 4,
+          "Score": 0,
+          "Ready": false,
+          "Connected": true
+        }
+      ]
+    }
+  },
+  "sourceSHA256": {
+    "Assets/CursedCrown/Core/GameRules.cs": "6dd41479508b43011b398bd291ab9eaa655bbbfaad966c23926cc1b80895dd32",
+    "Assets/CursedCrown/Core/SystemContracts.cs": "316d1ec211806b95a35661271c645c1bcd11efa4007232902778d7dfd64d836c",
+    "Assets/CursedCrown/Core/FoundationRig.cs": "fef3d81e9a0fb133ba05e27124274eb42a1c78cc7c2e0ecae016227dfbc0d8bc",
+    "Assets/CursedCrown/Match/CrownMatchRules.cs": "4e1d1d030b260f9e9f7c6b27ed29fd360505b1bdd90360a8ac82213fdff03413",
+    "Assets/CursedCrown/Match/MatchClock.cs": "44b4de4453c44e0c7550690a72b3e3ab7b2b3c60aaf6609c8feeb85ed3b6d0ab",
+    "Assets/CursedCrown/Match/MatchController.cs": "746797cf6b0d763ce2548e71ac3e0a69e8fe9934c061cfd312aeec7731c3dc5f",
+    "Assets/CursedCrown/Match/Person5HealthBridge.cs": "b6b3c390bfe81de4b568930eafd5c983750c754b29d499a64aabffd5b55ea367",
+    "Assets/CursedCrown/Match/ArenaMatchServices.cs": "d48c25b88fdfd4ecdf281500de9c9d2d685573bfeb26a775942befee03b4939f",
+    "Assets/CursedCrown/Match/MatchBootstrap.cs": "969173831a4486dc1a1e451c273b0b6e0250b1eb76990ca8db1ba4675f46f1eb",
+    "Assets/CursedCrown/Match/MatchPresentation.cs": "62110f6ea97b2d4448a980be62f9658872cebd9f9c587a0f9f9f566051376676",
+    "Assets/CursedCrown/Health/HealthHUD.cs": "c836392eec17354fb5518d019cec53d1b8923bf9ee8f4eb6ace9424663ba7a59",
+    "Assets/CursedCrown/Health/PlayerHealth.cs": "95de94ac5518de0c2ccd11220d500ecfd32be7a9c822e1d5fbdd7e8904112cda",
+    "Assets/CursedCrown/Sessions/FoundationSmokeProbe.cs": "3869c138e4ebc6359c1dbd560407c06993a3f9a6d2f89986ef7a2c5f91846e2e",
+    "Assets/CursedCrown/Sessions/FoundationAvatar.cs": "6398882e14b7bf9b035e445f807b2f9e472e0c0f6c28042941caa9420d4b7b99",
+    "Assets/CursedCrown/Sessions/SmokeTestPlan.cs": "026241f27077819da83473450c287bbe8db6181c0cd962b80ece164bd1e0e633",
+    "Assets/CursedCrown/Sessions/SessionInput.cs": "4079aa998d6ffae9c6faf1bff8ed4f06ab3943de34f546b3fde8fe6d0909704a",
+    "Assets/CursedCrown/Sessions/FoundationMenu.cs": "4e22ff6e3766dfd94724eba1fa5aea4f3b7104c38643a3bf845cb750b824130f",
+    "Assets/CursedCrown/Sessions/FoundationWorldMenu.cs": "76c47dc46a5311287afc544454c643f71aa89924459b50018b3df0a31f2e3cc3",
+    "Assets/CursedCrown/Sessions/FoundationSession.cs": "d92e23ee45544d24bc2e7db328146b277c56f055edbe2d5bc1bb0c30a6dc5c06",
+    "Assets/CursedCrown/Editor/FoundationChecks.cs": "e4c0e5e583750eac667eaff4e78eee4d852e1c951b4d6de8ccf273644312b723",
+    "Assets/CursedCrown/Editor/Person5HealthSetup.cs": "80fd3ebba988a7baba5cbcc9ed950d28e92cbe89c51560207379df85821afb39",
+    "Assets/CursedCrown/Editor/MemberOneChecks.cs": "5ad86918dabc31b70259c83df4b1e06f1f8807d92f00e7c4dc39ebf0cd3baac8",
+    "Assets/CursedCrown/Editor/Person5ArenaSetup.cs": "0850c851d58f8a37ed652ba339adc4783c1b47edb2cb33ca071166cc5a17db09",
+    "Assets/CursedCrown/Editor/FoundationAutomation.cs": "731fe216d808fe7781f43ff4a4955d749569c675676fa263a3ea93f6f39b74af",
+    "Assets/CursedCrown/Editor/Person5Setup.cs": "e874043d02883d01d102a223bab9b236df21825baa25059b1dfe91e8d84d81ed",
+    "Assets/CursedCrown/Editor/Person5PlayMode.cs": "90416714aeb20ed285abf5cb79f9eb3c0db9f155938f330a5c73e3e9a7fb925f",
+    "Assets/CursedCrown/Editor/DesktopTestPlayer.cs": "e28e724648e38af285c0e69360394b5f093b470db8ce5b598ab84d59f0f2dd50",
+    "Assets/CursedCrown/Editor/StarterSetup.cs": "d770cce646e22e1441d3677a3004e21ea3719563ae81e1cdb481d4c34b14e469",
+    "Assets/CursedCrown/Arena/Scripts/ArenaTeleportation.cs": "4929c054ea37d247bc2ffcc29ed1185611b7a10d6fc945fb5f642c806b310acc",
+    "Assets/CursedCrown/Arena/Scripts/ArenaSpawnTester.cs": "f908466f8cf25312a5c60949c07040136467d806726e4bf2cc2943fb325f96e5",
+    "Assets/CursedCrown/Arena/Scripts/ArenaSpawnManager.cs": "623718ce47399b0c71e54fc3becf446bab6679f177d97a1b3ee5554f19ab55ef",
+    "Assets/CursedCrown/Arena/Scripts/CrownDropManager.cs": "aaf06520112ef699de3c689e4ea978854ee9e9ed455881d3658ea291fd521108",
+    "Assets/CursedCrown/Tests/Person5/Person5NetworkProbe.cs": "1f93434da480c6c569d0eead67b50f355211ef07e35dfe3f9d3d8bffac7ded12",
+    "Assets/CursedCrown/Tests/Person4/HealthSandboxTester.cs": "c5bf2e89d5f31c50bbad35bf343b0a8e85d68aea32dd25cb468e9784c3c3daac",
+    "Assets/CursedCrown/Tests/Person4/HealthTestShooter.cs": "525bf43354ddb3b95e19bcf46de2dbc032b8e1a8b95e1b1978341f1fe76efb70",
+    "Tools/check_person5_network.py": "88c1cc7d2e1f367b21754c4aaa0d8e4c02b5272bd5efd88fca7fad819505c0a7"
+  }
+}

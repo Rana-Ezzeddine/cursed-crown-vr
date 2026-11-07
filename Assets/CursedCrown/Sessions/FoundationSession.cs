@@ -279,6 +279,8 @@ namespace CursedCrown
         // UPDATED: MULTIPLAYER ARENA SPAWN ASSIGNMENT
         // =====================================================
 
+        public bool TryGetSpawnSlot(ulong id, out int slot) => slots.TryGetValue(id, out slot);
+
         public Pose AssignSpawn(ulong id)
         {
             if (!Manager.IsServer)

@@ -45,3 +45,7 @@ The lockfile was resolved by this Editor. Android settings enable OpenXR for Que
 Unity import/compilation, scene/prefab validation, desktop Play Mode rendering, macOS development build, five simultaneous local player processes, sixth-player rejection, distinct spawns, tracked-pose replication, client departure and host departure. See [SETUP_STATUS.md](Docs/SETUP_STATUS.md), [TEST_MATRIX.md](Docs/TEST_MATRIX.md) and [VALIDATION_RESULTS.json](Docs/VALIDATION_RESULTS.json).
 
 Commit assets with their `.meta` files. Keep Library, Temp, Logs, builds, account state and credentials out of Git. Coordinate shared scene/prefab, contract and package edits. No public project license has been selected; record sources and AI assistance in [CONTRIBUTIONS.md](Docs/CONTRIBUTIONS.md).
+
+## Person 5 crown and match flow
+
+Start with [Person 5 demo guide](Docs/PERSON5_DEMO.md), [integration instructions](Docs/PERSON5_INTEGRATION.md), [teammate contract snapshot](Docs/PERSON5_TEAM_INTEGRATION.md), and [executed verification](Docs/PERSON5_VERIFICATION.md). Use the Person 5 build menus for its explicit sandbox scenes; the foundation build menu still targets Arena.

@@ -27,3 +27,7 @@ Record date, exact commit/APK, headset models, network, steps, expected result, 
 | Individual demo | Each member explains architecture and modifies/debugs own contribution | Pending |
 
 The passed networking rows use separate built macOS processes on loopback, not physical devices. See VALIDATION_RESULTS.json for sanitized evidence. Relay, Android builds, VR controller interaction and all gameplay rows remain unverified. A fresh teammate clone/import is still required on each teammate machine.
+
+## Person 5 update — 29 October 2026
+
+Person 5 now has executed Unity compilation, explicit sandbox builds, 64-check desktop and Editor Play Mode runs (five connected desktop peers), a 71-check run including a full 240-second round, and 30 real PlayerHealth integration checks. See PERSON5_VERIFICATION.md and the accompanying JSON evidence for exact source versions, historical failed attempts and limits. Physical Quest tests and the real Person 2 placement service remain pending; desktop processes are not headsets.

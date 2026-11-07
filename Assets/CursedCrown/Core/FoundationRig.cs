@@ -16,8 +16,10 @@ namespace CursedCrown
         public bool HasHeadset { get; private set; }
         public bool TriggerPressed { get; private set; }
         public bool MenuPressed { get; private set; }
+        public bool PickupPressed { get; private set; }
+        public bool RightTracked { get; private set; }
         readonly List<XRInputSubsystem> subsystems = new();
-        bool lastTrigger, lastMenu, floorOrigin;
+        bool lastTrigger, lastMenu, lastPickup, floorOrigin;
         float retryOrigin, desktopYaw;
         Vector3 desktopOffset;
         Vector3 lobbyPosition;
@@ -46,7 +48,10 @@ namespace CursedCrown
             var head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
             HasHeadset = head.isValid;
             IsTracked = head.isValid && head.TryGetFeatureValue(UnityEngine.XR.CommonUsages.isTracked, out var tracked) && tracked;
-            bool trigger = false, menu = false;
+            bool trigger = false, menu = false, pickup = false;
+            var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            RightTracked = IsTracked && right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.isTracked, out var rt) && rt;
+            if (RightTracked) right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.gripButton, out pickup);
             if (IsTracked)
             {
                 Track(XRNode.Head,Head);
@@ -74,6 +79,7 @@ namespace CursedCrown
             }
             TriggerPressed=trigger&&!lastTrigger;lastTrigger=trigger;
             MenuPressed=menu&&!lastMenu;lastMenu=menu;
+            PickupPressed=pickup&&!lastPickup;lastPickup=pickup;
         }
         void Track(XRNode node,Transform target)
         {
@@ -82,7 +88,7 @@ namespace CursedCrown
             if(input.TryGetFeatureValue(UnityEngine.XR.CommonUsages.deviceRotation,out var q))target.localRotation=q;
         }
         public AvatarPose ReadPose() => new AvatarPose { Head=Head.localPosition,Left=LeftHand.localPosition,Right=RightHand.localPosition,
-            HeadRotation=Head.localRotation,LeftRotation=LeftHand.localRotation,RightRotation=RightHand.localRotation };
+            HeadRotation=Head.localRotation,LeftRotation=LeftHand.localRotation,RightRotation=RightHand.localRotation, RightTracked=RightTracked };
         void OnDestroy() { if(Instance==this)Instance=null; }
     }
 }

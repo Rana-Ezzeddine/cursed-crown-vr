@@ -28,3 +28,10 @@ Tests/**/obj/
 .env
 .env.*
 !.env.example
+
+# Local Unity cloud associations, generated test data and Python cache.
+/ProjectSettings/UnityConnectSettings.asset
+/Assets/Resources/PerformanceTestRun*.json
+/Assets/Resources/PerformanceTestRun*.json.meta
+__pycache__/
+*.pyc

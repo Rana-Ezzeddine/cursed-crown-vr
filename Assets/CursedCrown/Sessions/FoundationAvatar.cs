@@ -6,6 +6,7 @@ namespace CursedCrown
     public struct AvatarPose : INetworkSerializable, System.IEquatable<AvatarPose>
     {
         public Vector3 Head, Left, Right;
+        public bool RightTracked;
         public Quaternion HeadRotation, LeftRotation, RightRotation;
 
         public void NetworkSerialize<T>(BufferSerializer<T> s)
@@ -18,6 +19,7 @@ namespace CursedCrown
             s.SerializeValue(ref HeadRotation);
             s.SerializeValue(ref LeftRotation);
             s.SerializeValue(ref RightRotation);
+            s.SerializeValue(ref RightTracked);
         }
 
         public bool Equals(AvatarPose p) =>
@@ -26,7 +28,7 @@ namespace CursedCrown
             Right == p.Right &&
             HeadRotation == p.HeadRotation &&
             LeftRotation == p.LeftRotation &&
-            RightRotation == p.RightRotation;
+            RightRotation == p.RightRotation && RightTracked == p.RightTracked;
 
         public bool IsValid() =>
             ValidVector(Head) &&
@@ -175,7 +177,8 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
                 var input = rig.ReadPose();
                 bool inputReady = (!rig.HasHeadset || rig.IsTracked) && input.IsValid();
                 if (inputReady) pose = input;
-                if (inputReady && Time.unscaledTime >= nextSend)
+                else pose.RightTracked = false;
+                if (pose.IsValid() && Time.unscaledTime >= nextSend)
                 {
                     nextSend = Time.unscaledTime + .05f;
                     SubmitPoseRpc(pose);
