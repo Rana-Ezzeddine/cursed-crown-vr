@@ -29,14 +29,14 @@ Reported as passing on 29 October 2026:
 
 The production-prefab check confirms that the components load and the HUD is visible in the Arena. A temporary server-side hand-raycast shooter has now been added to the Person 4 test prefab for a two-player hit test; it still needs to be run in Unity. It does not replace Person 3's production weapon system. The production spawn service, round-controller integration, full multi-client damage replication, and physical Quest behaviour still require their corresponding systems and end-to-end tests.
 
-## Integration still needed
+## Integration status on this branch
 
-1. `PlayerHealth`, `HealthHUD`, and a root `CapsuleCollider` are now integrated into the shared `FoundationPlayer` prefab on `feature/p4-health-respawn`. The Arena NetworkManager's `PlayerPrefab` already points directly to this prefab, so no Arena scene edit was needed. This prefab edit remains branch-only until the team reviews and merges it.
-2. Person 2's production spawn-service component must call `PlayerHealth.SetSpawnService(this)` when it is ready.
-3. Person 3 must call `ApplyValidatedHit` on the target player's component after server-side shot validation.
-4. Person 5 must call `SetCurrentRound(round)` for each spawned player on the host when a player joins mid-round and whenever the round changes.
-5. Members 2, 3, and 5 should check `CanAct` before allowing teleport, firing, or crown pickup. `IsAlive` remains available when they only need the alive state.
-6. `HealthHUD` creates a small World Space Canvas in front of the local player's tracked head. It is attached to both the sandbox test prefab and the production player prefab on this branch.
+1. `PlayerHealth`, `HealthHUD`, and the root/body hitboxes are integrated into the production `FoundationPlayer.prefab` on this branch. P3's `NetworkGun` and `GunEffects` are also present in the combined production prefab. The original shared Arena scene remains untouched.
+2. **P3 hit-to-health connection:** `Person4MatchHealthIntegration` subscribes to `NetworkGun.HitValidated` on the host and forwards the hit through `Person5HealthBridge.TryApplyValidatedHit` to `PlayerHealth.ApplyValidatedHit`.
+3. **P5 round/death connection:** the bridge synchronizes the authoritative `MatchController.RoundId` to each spawned `PlayerHealth` and `NetworkGun`, including late-spawned players. It forwards `PlayerDied` to `MatchController.NotifyPlayerDied` so a crown carrier can drop the crown.
+4. **Respawn test service:** the integration scene registers a temporary `ISpawnService` adapter that reuses `FoundationSession.AssignSpawn`. This exercises the P4 five-second respawn loop and stable per-player spawn assignment, but it does not perform P2's safe occupancy validation or safe crown-drop selection.
+5. **P2 production spawn/drop connection remains pending:** replace the temporary adapter with P2's production safe `ISpawnService` when that service is ready. Teleport/dead-player action gating also needs to be verified against P2's final movement implementation.
+6. `HealthHUD` creates a small World Space Canvas in front of the local player's tracked head. It is attached to both the combined integration player prefab and the production player prefab on this branch.
 
 ## P4 + P3 + P5 team integration test
 
