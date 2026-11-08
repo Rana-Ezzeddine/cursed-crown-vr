@@ -37,7 +37,7 @@ namespace CursedCrown
 
             var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             bool xrFire = right.isValid &&
-                right.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed) && pressed;
+                right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.triggerButton, out bool pressed) && pressed;
             bool keyboardFire = Keyboard.current != null &&
                 Keyboard.current.spaceKey.isPressed;
             bool fire = xrFire || keyboardFire;
@@ -47,7 +47,7 @@ namespace CursedCrown
 
             var left = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
             bool xrReload = left.isValid &&
-                left.TryGetFeatureValue(CommonUsages.secondaryButton, out bool button) && button;
+                left.TryGetFeatureValue(UnityEngine.XR.CommonUsages.secondaryButton, out bool button) && button;
             bool keyboardReload = Keyboard.current != null &&
                 Keyboard.current.rKey.wasPressedThisFrame;
             bool reload = xrReload || keyboardReload;
