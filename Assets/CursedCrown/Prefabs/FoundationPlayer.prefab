@@ -191,6 +191,8 @@ GameObject:
   - component: {fileID: 4083622787821903007}
   - component: {fileID: 1304983115799256298}
   - component: {fileID: 2944868045665734658}
+  - component: {fileID: 8243104650712330951}
+  - component: {fileID: 1147781467901825480}
   - component: {fileID: 4923419256123456789}
   - component: {fileID: 5839217402856123047}
   - component: {fileID: 6781245309812476503}
@@ -289,6 +291,7 @@ GameObject:
   - component: {fileID: 2052274974946301713}
   - component: {fileID: 7457661301504426262}
   - component: {fileID: 4489686231834736784}
+  - component: {fileID: 8073264543914378982}
   m_Layer: 0
   m_Name: Body
   m_TagString: Untagged
@@ -524,3 +527,65 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.HealthHUD
   HealthText: {fileID: 0}
   StatusText: {fileID: 0}
+--- !u!114 &8243104650712330951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63a83e9713774f7083b3f1b2a74738ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.NetworkGun
+  ShowTopMostFoldoutHeaderGroup: 1
+  Charge:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 10
+  Recharging:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  range: 35
+  fireInterval: 0.25
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &1147781467901825480
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076124771878454447}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 142a7a73196441b4b7302cde28e249a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CursedCrown.GunEffects
+  lifetime: 0.08
+--- !u!65 &8073264543914378982
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7654532421218699520}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.99999994, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
