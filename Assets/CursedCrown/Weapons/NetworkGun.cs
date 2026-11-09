@@ -86,7 +86,7 @@ namespace CursedCrown
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 end = hit.point;
                 var target = hit.collider.GetComponentInParent<FoundationAvatar>();
-                if (target != null && target.OwnerClientId != shooter && (PlayerState == null || PlayerState.IsAlive(target.OwnerClientId)))
+                if (target != null && target.OwnerClientId != shooter && PlayerState.IsAlive(target.OwnerClientId))
                     HitValidated?.Invoke(new ValidatedHit(Round, shooter, target.OwnerClientId, sequence, hit.point));
                 break;
             }
