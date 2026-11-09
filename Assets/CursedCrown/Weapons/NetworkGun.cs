@@ -76,8 +76,9 @@ namespace CursedCrown
             nextShot = now + fireInterval;
             Charge.Value--;
             sequence++;
-            Vector3 origin = transform.TransformPoint(pose.Right);
-            Vector3 direction = transform.rotation * pose.RightRotation * Vector3.forward;
+            // Match P1/P2's host-owned root values even in the frame of a teleport or respawn.
+            Vector3 origin = avatar.RootPosition.Value + avatar.RootRotation.Value * pose.Right;
+            Vector3 direction = avatar.RootRotation.Value * pose.RightRotation * Vector3.forward;
             Vector3 end = origin + direction * range;
             var hits = Physics.RaycastAll(origin, direction, range, hitMask, QueryTriggerInteraction.Ignore);
             Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
