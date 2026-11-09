@@ -73,6 +73,8 @@ namespace CursedCrown
         public NetworkVariable<AvatarPose> TrackedPose = new();
 
         double nextHostPose;
+        // Server time of the most recent authenticated, valid owner pose.
+        public double LastAcceptedPoseTime { get; private set; } = double.NegativeInfinity;
         float nextSend;
 
         Renderer[] headRenderers, bodyRenderers;
@@ -84,6 +86,7 @@ namespace CursedCrown
         {
             nextHostPose = 0;
             nextSend = 0;
+            LastAcceptedPoseTime = double.NegativeInfinity;
             if (IsServer)
             {
                 var spawn =
@@ -257,6 +260,7 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
                 return;
 
             nextHostPose = now + .025;
+            LastAcceptedPoseTime = now;
 
             TrackedPose.Value = pose;
         }
