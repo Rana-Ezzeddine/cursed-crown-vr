@@ -5,9 +5,9 @@ This preparation branch incorporates P4 at `8875993` and P5 at `a9c6f0f`; it doe
 
 ## Ownership and connections
 
-P1/P2 retain credit for sessions, avatars, arena, teleportation, spawn reservations and safe-drop selection. P4 retains credit for PlayerHealth, HealthHUD and their sandbox; the latest PlayerHealth source is retained unchanged. Rana's integration work, assisted by Codex, reconciles the rig/avatar changes, synchronizes health rounds, adds the arena-service adapter, prepares a combined scene and extends runtime verification. P3 weapons are not included.
+P1/P2 retain credit for sessions, avatars, arena, teleportation, spawn reservations and safe-drop selection. P4 retains credit for PlayerHealth, HealthHUD and their sandbox; the latest PlayerHealth source is retained unchanged. Rana's integration work, assisted by Codex, reconciles the rig/avatar changes, synchronizes health rounds, adds the arena-service adapter, prepares a combined scene and extends runtime verification. P3's host-authoritative NetworkGun and GunEffects are now added on the follow-on branch `feature/p4-final-integration`; P4's match-health bridge connects them to the existing P5 health/match bridge.
 
-`MatchController.RoundId` owns round identity. `Person5HealthBridge` synchronizes every spawned health component on the host, including late joins, before forwarding damage, and before restart reset hooks. Health round identity is server-local; clients receive the match round and replicated HP/alive state. This does not yet synchronize P3's weapon counter.
+`MatchController.RoundId` owns round identity. `Person5HealthBridge` synchronizes every spawned health component on the host, including late joins, before forwarding damage, and before restart reset hooks. Health round identity is server-local; clients receive the match round and replicated HP/alive state. The follow-on P4 integration bridge synchronizes every spawned gun to `MatchController.RoundId`; the gun's round reset now uses the match-owned round rather than incrementing an independent counter.
 
 `ArenaMatchServices` implements ISpawnService using P2's actual managers. It translates client IDs through FoundationSession's existing slot map so initial spawn, death, respawn and disconnect share the same reservations. The adapter registers with PlayerHealth and is preferred by MatchController over optional test fixtures. If no drop point is safe, the match falls back to its pedestal. If no spawn is safe, P4's health coroutine waits and retries. The imported P4 five-second respawn setting is preserved; team tuning agreement remains pending.
 
@@ -27,10 +27,15 @@ The first combined runtime run reproduced a duplicate client scoreboard row duri
 
 ## Remaining work before final gameplay acceptance
 
-- Add P3 weapons and reconcile its shared player-prefab changes. Wire validated hits and alive/match dependencies; synchronize weapon rounds and reject old-round fire/reload requests.
+- Run the P3/P4/P5 weapon-health-match connection from `feature/p4-final-integration` in this production arena scene with two clients. Verify validated damage, dead-player action gating, charge reset, and round synchronization after restart. The code is connected on that branch, but its production `ArenaMatchServices` path still needs a fresh Unity runtime run.
 - P2 teleportation still needs alive/phase/round validation and consistent headset-offset landing validation. Test simultaneous destination occupancy and no-free-spawn behavior.
 - P1's standalone test project still needs its new arena dependencies represented, and the pre-existing integration session changes need review (full exception logging and removed optional Relay authentication profiles).
 - Run the complete production shooting/gameplay loop and five-player acceptance on the combined version, then Quest 2/3, Android installation, tracking loss, intended network and performance checks.
 - Agree respawn timing, add weapon charge/recharge feedback, and complete the final technical report/contribution record.
 
 The shared Arena scene is not replaced. This scene remains an integration test scene until the remaining systems and acceptance checks are complete.
+
+
+## Follow-on P3/P4 integration branch
+
+As of the P4 final-integration preparation, `feature/p4-final-integration` is based on `integration/final-game`. It adds P3's weapon scripts to the existing production player prefab and P4's hit/death bridge to `Person5ArenaMatch.prefab`. It reuses the scene's existing `ArenaMatchServices`; the previous P4 test-only spawn adapter is not included. See `Docs/P4_FINAL_INTEGRATION.md` for ownership and the exact two-client acceptance sequence. This branch is a review candidate only until its combined Unity rerun passes.
