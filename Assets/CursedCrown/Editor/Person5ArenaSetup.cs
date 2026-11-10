@@ -28,6 +28,9 @@ namespace CursedCrown.Editor
             match.AllowMockAlive = false;
             match.AllowDesktopPickup = false;
             root.AddComponent<Person5HealthBridge>();
+            // Keep the production P3 hit -> P4 health connection when this scene
+            // and match prefab are regenerated for acceptance testing.
+            root.AddComponent<Person4MatchHealthIntegration>();
             var presentation = new GameObject("Crown and Match HUD").AddComponent<MatchPresentation>();
             presentation.CrownMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/CursedCrown/Materials/CrownGold.mat");
             presentation.PanelMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/CursedCrown/Materials/UIUnlit.mat");
