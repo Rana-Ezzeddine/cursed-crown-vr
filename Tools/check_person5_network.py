@@ -4,8 +4,15 @@ import argparse, json, os, pathlib, subprocess, tempfile, time
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-UNITY = '/Applications/Unity/Hub/Editor/6000.6.2f1/Unity.app/Contents/MacOS/Unity'
-BINARY = ROOT / 'Builds/Person5Sandbox.app/Contents/MacOS/The Cursed Crown'
+UNITY = os.environ.get('UNITY_EDITOR_PATH', (
+    r'C:\Program Files\Unity\Hub\Editor\6000.6.2f1\Editor\Unity.exe'
+    if os.name == 'nt' else
+    '/Applications/Unity/Hub/Editor/6000.6.2f1/Unity.app/Contents/MacOS/Unity'
+))
+def player_binary(name):
+    return ROOT / (f'Builds/{name}.exe' if os.name == 'nt' else
+                   f'Builds/{name}.app/Contents/MacOS/The Cursed Crown')
+BINARY = player_binary('Person5Sandbox')
 parser = argparse.ArgumentParser()
 parser.add_argument('--editor', action='store_true', help='Use actual Editor Play Mode for host')
 parser.add_argument('--full-duration', action='store_true')
@@ -15,8 +22,8 @@ args = parser.parse_args()
 if args.arena: args.real_health = True
 if args.real_health:
     if args.editor: parser.error("--real-health uses its isolated standalone scene")
-    BINARY = ROOT / "Builds/Person5HealthIntegration.app/Contents/MacOS/The Cursed Crown"
-if args.arena: BINARY = ROOT / 'Builds/Person5ArenaIntegration.app/Contents/MacOS/The Cursed Crown'
+    BINARY = player_binary('Person5HealthIntegration')
+if args.arena: BINARY = player_binary('Person5ArenaIntegration')
 OUT = pathlib.Path(tempfile.mkdtemp(prefix='person5-network-'))
 print('Reports:', OUT, flush=True)
 processes = {}
