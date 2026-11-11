@@ -43,9 +43,23 @@ def launch(name, mode):
     processes[name] = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     seq[name] = 0
 
+def retry_file_access(operation, timeout=1.0):
+    """Retry short Windows sharing locks, but surface persistent access failures."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            return operation()
+        except PermissionError:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(.02)
+
 def read(name):
-    try: return json.loads((OUT/(name+'.json')).read_text())
-    except (FileNotFoundError,json.JSONDecodeError): return {}
+    try:
+        return retry_file_access(
+            lambda: json.loads((OUT/(name+'.json')).read_text(encoding='utf-8')))
+    except (FileNotFoundError,json.JSONDecodeError):
+        return {}
 
 def wait(label, predicate, timeout=15):
     until=time.monotonic()+timeout
@@ -60,7 +74,7 @@ def command(name, action, **kwargs):
     p=OUT/(name+'.command.json')
     tmp=p.with_suffix('.tmp')
     tmp.write_text(json.dumps(dict(sequence=seq[name], action=action, **kwargs)))
-    tmp.replace(p)
+    retry_file_access(lambda: tmp.replace(p))
     until=time.monotonic()+10
     while time.monotonic()<until:
         r=read(name)
