@@ -28,6 +28,9 @@ namespace CursedCrown.Editor
             match.AllowMockAlive = false;
             match.AllowDesktopPickup = false;
             root.AddComponent<Person5HealthBridge>();
+            // Keep the production P3 hit -> P4 health connection when this scene
+            // and match prefab are regenerated for acceptance testing.
+            root.AddComponent<Person4MatchHealthIntegration>();
             var presentation = new GameObject("Crown and Match HUD").AddComponent<MatchPresentation>();
             presentation.CrownMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/CursedCrown/Materials/CrownGold.mat");
             presentation.PanelMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/CursedCrown/Materials/UIUnlit.mat");
@@ -57,9 +60,16 @@ namespace CursedCrown.Editor
         {
             Prepare();
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
+#if UNITY_EDITOR_WIN
+            const BuildTarget target = BuildTarget.StandaloneWindows64;
+            const string output = "Builds/Person5ArenaIntegration.exe";
+#else
+            const BuildTarget target = BuildTarget.StandaloneOSX;
+            const string output = "Builds/Person5ArenaIntegration.app";
+#endif
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
-                scenes = new[] { Scene }, locationPathName = "Builds/Person5ArenaIntegration.app",
-                target = BuildTarget.StandaloneOSX, options = BuildOptions.Development });
+                scenes = new[] { Scene }, locationPathName = output,
+                target = target, options = BuildOptions.Development });
             if (report.summary.result != BuildResult.Succeeded) throw new System.Exception("Arena build failed");
             Debug.Log("CC_PERSON5_ARENA_BUILD_PASS");
         }

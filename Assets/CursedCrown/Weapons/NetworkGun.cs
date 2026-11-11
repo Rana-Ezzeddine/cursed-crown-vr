@@ -16,6 +16,8 @@ namespace CursedCrown
         public IPlayerState PlayerState;
         public IMatchState MatchState;
         public uint Round { get; private set; }
+        // Only enable on a local desktop test prefab. Production requires tracked hands.
+        [SerializeField] bool allowUntrackedDesktopAimInTests;
         [SerializeField] float range = 35f;
         [SerializeField] float fireInterval = .25f;
         [SerializeField] LayerMask hitMask = ~0;
@@ -34,6 +36,9 @@ namespace CursedCrown
             }
 
             if (!IsSpawned || !IsOwner) return;
+            var match = MatchController.Instance;
+            if (match == null || !match.IsSpawned) return;
+            uint requestedRound = match.RoundId;
 
             var right = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             bool xrFire = right.isValid &&
@@ -42,7 +47,7 @@ namespace CursedCrown
                 Keyboard.current.spaceKey.isPressed;
             bool fire = xrFire || keyboardFire;
 
-            if (fire && !triggerHeld) FireRpc();
+            if (fire && !triggerHeld) FireRpc(requestedRound);
             triggerHeld = fire;
 
             var left = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
@@ -52,22 +57,28 @@ namespace CursedCrown
                 Keyboard.current.rKey.wasPressedThisFrame;
             bool reload = xrReload || keyboardReload;
 
-            if (reload && !reloadHeld) RechargeRpc();
+            if (reload && !reloadHeld) RechargeRpc(requestedRound);
             reloadHeld = reload;
         }
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
-        void FireRpc(RpcParams rpc = default)
+        void FireRpc(uint requestedRound, RpcParams rpc = default)
         {
             ulong shooter = rpc.Receive.SenderClientId;
             double now = NetworkManager.ServerTime.Time;
-            if (shooter != OwnerClientId || !CanAct(shooter) || Recharging.Value || Charge.Value <= 0 || now < nextShot) return;
+            if (shooter != OwnerClientId || requestedRound != Round || !CanAct(shooter) ||
+                Recharging.Value || Charge.Value <= 0 || now < nextShot) return;
+            var pose = avatar.TrackedPose.Value;
+            // Unreliable pose delivery may stop during tracking loss; bound the age of
+            // the last accepted pose as well as checking its tracked-hand flag.
+            if ((!pose.RightTracked && !allowUntrackedDesktopAimInTests) ||
+                now - avatar.LastAcceptedPoseTime > .3) return;
             nextShot = now + fireInterval;
             Charge.Value--;
             sequence++;
-            var pose = avatar.TrackedPose.Value;
-            Vector3 origin = transform.TransformPoint(pose.Right);
-            Vector3 direction = transform.rotation * pose.RightRotation * Vector3.forward;
+            // Match P1/P2's host-owned root values even in the frame of a teleport or respawn.
+            Vector3 origin = avatar.RootPosition.Value + avatar.RootRotation.Value * pose.Right;
+            Vector3 direction = avatar.RootRotation.Value * pose.RightRotation * Vector3.forward;
             Vector3 end = origin + direction * range;
             var hits = Physics.RaycastAll(origin, direction, range, hitMask, QueryTriggerInteraction.Ignore);
             Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
@@ -76,20 +87,21 @@ namespace CursedCrown
                 if (hit.collider.transform.IsChildOf(transform)) continue;
                 end = hit.point;
                 var target = hit.collider.GetComponentInParent<FoundationAvatar>();
-                if (target != null && target.OwnerClientId != shooter && (PlayerState == null || PlayerState.IsAlive(target.OwnerClientId)))
+                if (target != null && target.OwnerClientId != shooter && PlayerState.IsAlive(target.OwnerClientId))
                     HitValidated?.Invoke(new ValidatedHit(Round, shooter, target.OwnerClientId, sequence, hit.point));
                 break;
             }
             ShotFired?.Invoke(shooter, origin, end);
             ShotEffectRpc(origin, end);
         }
-        bool CanAct(ulong player) => (PlayerState == null || PlayerState.IsAlive(player)) &&
-            (MatchState == null || MatchState.Phase == MatchPhase.Playing);
+        bool CanAct(ulong player) => PlayerState != null && PlayerState.IsAlive(player) &&
+            MatchState != null && MatchState.Phase == MatchPhase.Playing;
 
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
-        void RechargeRpc(RpcParams rpc = default)
+        void RechargeRpc(uint requestedRound, RpcParams rpc = default)
         {
-            if (rpc.Receive.SenderClientId != OwnerClientId || !CanAct(OwnerClientId) || Recharging.Value || Charge.Value >= GameRules.MaxCharge) return;
+            if (rpc.Receive.SenderClientId != OwnerClientId || requestedRound != Round ||
+                !CanAct(OwnerClientId) || Recharging.Value || Charge.Value >= GameRules.MaxCharge) return;
             Recharging.Value = true;
             rechargeEnd = NetworkManager.ServerTime.Time + GameRules.RechargeSeconds;
         }

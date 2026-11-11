@@ -37,7 +37,7 @@ Use the scene's existing `Person5ArenaNetworkPrefabs` registry. It already regis
 Recommended two-instance acceptance sequence:
 
 1. Open the scene in Unity 6000.6.2f1 and run the Editor as Host LAN.
-2. Build a standalone Linux client with this same scene as the first and only enabled startup scene, then join the host at `127.0.0.1` on the same computer.
+2. Build a standalone client for the editor's OS from the same scene (`CursedCrown.Editor.Person5ArenaSetup.Build` produces `Builds/Person5ArenaIntegration.exe` on Windows or `.app` on macOS), then join the host at `127.0.0.1` on the same computer. The setup command preserves the P3-to-P4 damage bridge when regenerating the match prefab.
 3. Verify both players connect, ready up and the host starts the match.
 4. Fire at the other player's body. Each accepted hit should remove 25 HP; four hits should trigger death, disabled hitboxes, the five-second countdown, and respawn with 100 HP.
 5. Finish/restart the match. Verify weapon charge and round identity reset, and shots in the new round reduce health again.
@@ -53,3 +53,5 @@ The earlier `feature/p4-team-integration` two-instance test was reported as pass
 - Complete P1's session review and five-player acceptance on the combined build.
 - Verify Quest 2/3, Android installation, tracking loss, intended network and performance.
 - Agree team tuning/feedback for weapon charge and respawn before final acceptance.
+
+For the automated arena health/spawn suite, run `python Tools/check_person5_network.py --arena` after the standalone build on Windows or macOS. That suite injects validated hits and does not replace the manual weapon raycast and tracking tests above.

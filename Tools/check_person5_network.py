@@ -4,8 +4,15 @@ import argparse, json, os, pathlib, subprocess, tempfile, time
 from concurrent.futures import ThreadPoolExecutor
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-UNITY = '/Applications/Unity/Hub/Editor/6000.6.2f1/Unity.app/Contents/MacOS/Unity'
-BINARY = ROOT / 'Builds/Person5Sandbox.app/Contents/MacOS/The Cursed Crown'
+UNITY = os.environ.get('UNITY_EDITOR_PATH', (
+    r'C:\Program Files\Unity\Hub\Editor\6000.6.2f1\Editor\Unity.exe'
+    if os.name == 'nt' else
+    '/Applications/Unity/Hub/Editor/6000.6.2f1/Unity.app/Contents/MacOS/Unity'
+))
+def player_binary(name):
+    return ROOT / (f'Builds/{name}.exe' if os.name == 'nt' else
+                   f'Builds/{name}.app/Contents/MacOS/The Cursed Crown')
+BINARY = player_binary('Person5Sandbox')
 parser = argparse.ArgumentParser()
 parser.add_argument('--editor', action='store_true', help='Use actual Editor Play Mode for host')
 parser.add_argument('--full-duration', action='store_true')
@@ -15,8 +22,8 @@ args = parser.parse_args()
 if args.arena: args.real_health = True
 if args.real_health:
     if args.editor: parser.error("--real-health uses its isolated standalone scene")
-    BINARY = ROOT / "Builds/Person5HealthIntegration.app/Contents/MacOS/The Cursed Crown"
-if args.arena: BINARY = ROOT / 'Builds/Person5ArenaIntegration.app/Contents/MacOS/The Cursed Crown'
+    BINARY = player_binary('Person5HealthIntegration')
+if args.arena: BINARY = player_binary('Person5ArenaIntegration')
 OUT = pathlib.Path(tempfile.mkdtemp(prefix='person5-network-'))
 print('Reports:', OUT, flush=True)
 processes = {}
@@ -36,32 +43,79 @@ def launch(name, mode):
     processes[name] = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     seq[name] = 0
 
-def read(name):
-    try: return json.loads((OUT/(name+'.json')).read_text())
-    except (FileNotFoundError,json.JSONDecodeError): return {}
+class ReportUnavailable(RuntimeError):
+    """A report has not been published completely yet."""
+
+poll_reports = None
+
+def retry_file_access(operation, timeout=1.0, retry_errors=(PermissionError,)):
+    """Retry short Windows sharing locks, but surface persistent access failures."""
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            return operation()
+        except retry_errors:
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(.02)
+
+def read(name, timeout=1.0):
+    try:
+        return retry_file_access(
+            lambda: json.loads((OUT/(name+'.json')).read_text(encoding='utf-8')),
+            timeout=timeout,
+            retry_errors=(PermissionError, FileNotFoundError, json.JSONDecodeError))
+    except (FileNotFoundError, json.JSONDecodeError) as error:
+        raise ReportUnavailable(f'{name} report is not ready: {error}') from error
+
+def diagnostic_report(name):
+    try:
+        return read(name)
+    except ReportUnavailable as error:
+        return {'unavailable': str(error)}
 
 def wait(label, predicate, timeout=15):
-    until=time.monotonic()+timeout
-    while time.monotonic()<until:
-        if predicate():
-            checks.append(label); print('PASS:',label,flush=True); return
+    global poll_reports
+    until = time.monotonic() + timeout
+    last_unavailable = ''
+    while time.monotonic() < until:
+        # One coherent report per peer for each predicate evaluation.
+        poll_reports = {}
+        try:
+            if predicate():
+                checks.append(label); print('PASS:', label, flush=True); return
+        except ReportUnavailable as error:
+            last_unavailable = str(error)
+        except KeyError as error:
+            last_unavailable = f'missing report field {error}'
+        finally:
+            poll_reports = None
         time.sleep(.1)
-    raise AssertionError(label+'; snapshots='+str({n:read(n) for n in processes}))
+    raise AssertionError(label + '; unavailable=' + last_unavailable +
+                         '; snapshots=' + str({n: diagnostic_report(n) for n in processes}))
 
 def command(name, action, **kwargs):
     seq[name]+=1
     p=OUT/(name+'.command.json')
     tmp=p.with_suffix('.tmp')
     tmp.write_text(json.dumps(dict(sequence=seq[name], action=action, **kwargs)))
-    tmp.replace(p)
+    retry_file_access(lambda: tmp.replace(p))
     until=time.monotonic()+10
     while time.monotonic()<until:
-        r=read(name)
-        if r.get('ack',0)>=seq[name]: return r
+        try:
+            r = read(name)
+            if r.get('ack', 0) >= seq[name]: return r
+        except ReportUnavailable:
+            pass
         time.sleep(.05)
     raise AssertionError('Command not acknowledged: '+name+' '+action)
 
-def match(name='host'): return read(name)
+def match(name='host'):
+    if poll_reports is None:
+        return read(name)
+    if name not in poll_reports:
+        poll_reports[name] = read(name)
+    return poll_reports[name]
 def rows(name='host'): return {r['Id']:r for r in match(name).get('scores',[])}
 def phase(value, names=('host','client')): return all(match(n).get('phase')==value for n in names)
 def pickup(name='host', rnd=None): command(name,'pickup',round=rnd or match(name)['round'])
