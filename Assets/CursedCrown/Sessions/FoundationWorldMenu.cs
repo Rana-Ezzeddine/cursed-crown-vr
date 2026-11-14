@@ -82,7 +82,17 @@ namespace CursedCrown
             bool visible = rig != null && rig.IsTracked && (!connected || connectedMenu);
             foreach (var renderer in panelRenderers) renderer.enabled = visible;
             foreach (var collider in panelColliders) collider.enabled = visible;
-            pointer.enabled = visible;
+            // Keep the shared aiming ray available for the match's Ready/Start controls.
+            // Tracking loss must hide it rather than leaving a stale aim visible.
+            pointer.enabled = rig != null && rig.IsTracked && rig.RightTracked;
+            if (pointer.enabled)
+            {
+                var aim = new Ray(rig.RightHand.position, rig.RightHand.forward);
+                var endPoint = Physics.Raycast(aim, out var aimHit, 8)
+                    ? aimHit.point : aim.GetPoint(8);
+                pointer.SetPosition(0, aim.origin);
+                pointer.SetPosition(1, endPoint);
+            }
             if (!visible) return;
             status.text = "THE CURSED CROWN\n" + Wrap(Session.Status, 52) +
                 "\nPlayers " + Session.PlayerCount + " / " + GameRules.MaxPlayers;
@@ -96,7 +106,7 @@ namespace CursedCrown
             if (Physics.Raycast(ray, out var hit, 8) && actions.TryGetValue(hit.collider, out var action))
             {
                 end = hit.point;
-                if (rig.TriggerPressed && action.Enabled()) action.Invoke();
+                if (rig.RightTracked && rig.TriggerPressed && action.Enabled()) action.Invoke();
             }
             pointer.SetPosition(0, ray.origin); pointer.SetPosition(1, end);
         }

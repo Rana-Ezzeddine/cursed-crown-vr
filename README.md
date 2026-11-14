@@ -2,14 +2,16 @@
 
 Five-player full-VR laser tag for CMPS297AG, targeting Meta Quest 2 and Quest 3.
 
-**Shared multiplayer foundation verified in Unity on macOS. Physical Quest, Android APK and Relay tests are still pending.** Gameplay systems remain team assignments.
+The final integrated game is on `integration/final-game`. Unity's default build scene is
+`Assets/CursedCrown/Tests/Person5/Person5_ArenaIntegration.unity`.
+See [Unity headset build and test](Docs/UNITY_HEADSET_BUILD.md) for the demonstration workflow and verification limits.
 
 ## Start here
 
 1. Clone this private repository into a local folder outside cloud sync.
 2. Add the repository root in Unity Hub and use **6000.6.2f1 (770e33f6875c)**. Install Android Build Support, SDK/NDK and OpenJDK for Quest development.
 3. Allow the committed manifest and lockfile to resolve. Do not upgrade packages independently.
-4. Open `Assets/CursedCrown/Scenes/Arena.unity`, press Play, and choose **Host LAN**.
+4. Open `Assets/CursedCrown/Tests/Person5/Person5_ArenaIntegration.unity`, press Play, and choose **Host LAN**.
 5. Work on your feature branch in `Assets/CursedCrown/Tests/PersonN/PersonN_Sandbox.unity`. Integrate through pull requests into the shared Arena scene.
 
 Read [FOUNDATION_HANDOFF.md](Docs/FOUNDATION_HANDOFF.md) for controls, architecture, services setup, five-person integration points and validation commands. Read [FIRST_TASKS.md](Docs/FIRST_TASKS.md) for ownership and milestones.
@@ -24,7 +26,7 @@ Member 1: use [MEMBER1_START_HERE.md](Docs/MEMBER1_START_HERE.md) for the beginn
 - Desktop lobby plus controller-operated VR lobby and Relay code keypad. Relay implementation requires linking a suitable Unity services project before testing.
 - Shared rule constants/interfaces, five personal sandbox scenes and repeatable Editor validation/build/network checks.
 
-Teleportation, firing/recharge, damage, health/respawn, crown possession/scoring, match flow and restart are assigned to the team. The starter does not implement a complete match.
+The final integration scene connects teleportation, firing/recharge, damage, health/respawn, crown possession/scoring, match flow and restart. The original Arena scene remains a foundation scene; do not use it for the final demonstration.
 
 ## Pinned versions
 

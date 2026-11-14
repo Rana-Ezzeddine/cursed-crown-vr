@@ -91,7 +91,7 @@ namespace CursedCrown
             panel.position = rig.transform.TransformPoint(new Vector3(-1.75f, 2, 2.5f));
             panel.rotation = rig.transform.rotation;
             if (rig.PickupPressed && match.Phase == MatchPhase.Playing) match.RequestPickup();
-            if (!rig.TriggerPressed) return;
+            if (!rig.RightTracked || !rig.TriggerPressed) return;
             var hand = rig.RightHand;
             if (Physics.Raycast(hand.position, hand.forward, out var hit, 8) && buttons.TryGetValue(hit.collider, out var action)) action();
 

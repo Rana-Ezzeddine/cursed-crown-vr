@@ -271,9 +271,21 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
 
         // Called by ArenaTeleportation when the local
         // player selects a valid teleport destination.
+        // Applied locally for feedback and again on the server for authoritative enforcement.
+        public bool CanTeleport
+        {
+            get
+            {
+                var match = MatchController.Instance;
+                var health = GetComponent<PlayerHealth>();
+                return IsSpawned && match != null && match.IsSpawned &&
+                    match.Phase == MatchPhase.Playing && health != null && health.CanAct;
+            }
+        }
+
         public void RequestTeleport(Vector3 destination)
         {
-            if (!IsSpawned || !IsOwner)
+            if (!IsOwner || !CanTeleport)
                 return;
 
             RequestTeleportRpc(destination);
@@ -289,8 +301,13 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
             Vector3 destination,
             RpcParams rpcParams = default)
         {
-            // Verify that the request belongs to this player.
-            if (rpcParams.Receive.SenderClientId != OwnerClientId)
+            HandleTeleportRequest(rpcParams.Receive.SenderClientId, destination);
+        }
+
+        internal void HandleTeleportRequest(ulong sender, Vector3 destination)
+        {
+            // Never trust the client's local movement gate.
+            if (!IsServer || sender != OwnerClientId || !CanTeleport)
                 return;
 
             // Reject invalid coordinates.

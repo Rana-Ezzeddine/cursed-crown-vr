@@ -30,6 +30,17 @@ namespace CursedCrown
 
         void Update()
         {
+            if (Unity.Netcode.NetworkManager.Singleton != null &&
+                Unity.Netcode.NetworkManager.Singleton.IsListening)
+            {
+                var player = Unity.Netcode.NetworkManager.Singleton.LocalClient?.PlayerObject;
+                var avatar = player != null ? player.GetComponent<FoundationAvatar>() : null;
+                if (avatar == null || !avatar.CanTeleport)
+                {
+                    StopAiming();
+                    return;
+                }
+            }
             // Desktop: hold T to aim, release to teleport.
             bool desktopHeld =
                 Keyboard.current != null &&
