@@ -45,9 +45,9 @@ The Person 4 sandbox has its own copy of the player prefab and a simple host-onl
 1. Open `Assets/CursedCrown/Tests/Person4/Person4_Sandbox.unity` in Unity.
 2. Enter Play Mode and click **Host LAN**.
 3. In the Game view, use the **PERSON 4 HEALTH SANDBOX** panel. Set target client ID to 0 for the host player.
-4. Click **Wrong-round hit (should reject)** first. This deliberately submits a hit for a different round, so health must not change and the Console should report `Accepted: False`. Then click **Apply one hit (-25 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 75 and the repeated hit should report `Accepted: False`.
-5. Click **Apply one hit (-25 HP)** three more times. Health should reach 0; the player should be marked dead, its colliders should be disabled, and `Death events this run` should increase to 1.
-6. While the player is dead, click **Apply one hit (-25 HP)** again. Health should remain at 0 and the death-event count should remain 1.
+4. Click **Wrong-round hit (should reject)** first. This deliberately submits a hit for a different round, so health must not change and the Console should report `Accepted: False`. Then click **Apply one hit (-10 HP)** once, then click **Repeat last hit (should reject)**. Health should stay at 90 and the repeated hit should report `Accepted: False`.
+5. Click **Apply one hit (-10 HP)** nine more times. Health should reach 0; the player should be marked dead, its colliders should be disabled, and `Death events this run` should increase to 1.
+6. While the player is dead, click **Apply one hit (-10 HP)** again. Health should remain at 0 and the death-event count should remain 1.
 7. For the normal path, leave the spawn available, watch the HUD count down from five seconds, and confirm the player respawns at 100 HP.
 8. To test the fallback, click **Simulate no free respawn spawn** before the player dies. After the countdown, the HUD should show **WAITING FOR SPAWN**. Click **Make respawn spawn available**; the player should then respawn at 100 HP without restarting the session.
 9. Click **Reset health / respawn** to restore the target for another test. For a remote client, set the target ID to its client ID.
@@ -62,7 +62,7 @@ The Person 4 test player prefab also has `HealthTestShooter`. It is only include
 2. Start **Host LAN** on the first instance. Join the session from the second instance using **Join LAN**. Wait until both players have spawned.
 3. In the host's **PERSON 4 HEALTH SANDBOX** panel, set the target client ID to the other player (usually client ID 1).
 4. Aim the right hand at the other player's body. In desktop simulation, hold the right mouse button and use **Q/E** to rotate; press **Space** to shoot. On Quest, aim with the right controller and pull its trigger.
-5. Each successful hit should reduce the target's health by 25. Four hits should cause death, disable the target collider, show the five-second respawn countdown, and respawn the target with full health.
+5. Each successful hit should reduce the target's health by 10. Ten hits should cause death, disable the target collider, show the five-second respawn countdown, and respawn the target with full health.
 6. Check the host Console for `Health test shot hit...`. A miss or a wall/cover hit is logged separately.
 
 This test shooter sends only a fire request to the host. The host raycasts from the shooter's replicated right-hand transform and creates the `ValidatedHit`; the existing `PlayerHealth` applies the damage. This tests the player hitbox and health path with two networked players, but not real weapon models, ammunition/recharge, or Person 3's final firing implementation. Remove or disable the test shooter after Person 3's weapon system is integrated.

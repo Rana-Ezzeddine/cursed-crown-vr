@@ -1,0 +1,1 @@
+Open the final Person5_ArenaIntegration scene. For the current reproduction instructions use Documentation/Setup-and-Join.pdf in the submission bundle. Older Docs files are historical evidence and can describe superseded controls/rules. Source is a working-tree snapshot beyond base commit e6287de73f953039efe3c5fdf04a4067e1df9ae3.

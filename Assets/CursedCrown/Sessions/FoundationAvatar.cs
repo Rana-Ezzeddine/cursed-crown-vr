@@ -71,6 +71,20 @@ namespace CursedCrown
             new(Quaternion.identity);
 
         public NetworkVariable<AvatarPose> TrackedPose = new();
+        public NetworkVariable<int> CharacterChoice = new(0);
+        TempleCharacter character;
+        TextMesh nameplate;
+        public void ChooseCharacter(int choice)
+        { if(IsSpawned && IsOwner) ChooseCharacterRpc(choice); }
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        void ChooseCharacterRpc(int choice, RpcParams rpc = default) => HandleCharacterChoice(rpc.Receive.SenderClientId, choice);
+        internal void HandleCharacterChoice(ulong sender,int choice)
+        {
+            var match=MatchController.Instance;
+            if(!IsServer || sender!=OwnerClientId || choice<0 || choice>=TempleCharacter.Names.Length ||
+                match==null || !match.IsSpawned || match.Phase!=MatchPhase.Lobby) return;
+            CharacterChoice.Value=choice;
+        }
 
         double nextHostPose;
         // Server time of the most recent authenticated, valid owner pose.
@@ -89,6 +103,7 @@ namespace CursedCrown
             LastAcceptedPoseTime = double.NegativeInfinity;
             if (IsServer)
             {
+                CharacterChoice.Value=(int)(OwnerClientId % (ulong)TempleCharacter.Names.Length);
                 var spawn =
                     FoundationSession.Instance.AssignSpawn(OwnerClientId);
 
@@ -117,33 +132,12 @@ namespace CursedCrown
                 };
             }
 
-            headRenderers =
-                Head.GetComponentsInChildren<Renderer>();
-
-            bodyRenderers =
-                Body.GetComponentsInChildren<Renderer>();
-
-            foreach (var r in GetComponentsInChildren<Renderer>())
-            {
-                var material = r.material;
-
-                ownedMaterials.Add(material);
-
-                material.color = Color.HSVToRGB(
-                    (OwnerClientId * .21f + .52f) % 1f,
-                    .65f,
-                    .9f
-                );
-            }
-
-            if (IsOwner)
-            {
-                foreach (var r in headRenderers)
-                    r.enabled = false;
-
-                foreach (var r in bodyRenderers)
-                    r.enabled = false;
-            }
+            foreach(var renderer in GetComponentsInChildren<Renderer>()) renderer.enabled=false;
+            character=gameObject.AddComponent<TempleCharacter>();character.Build();
+            var tag=new GameObject("Player name");tag.transform.SetParent(transform,false);
+            nameplate=tag.AddComponent<TextMesh>();nameplate.fontSize=64;nameplate.characterSize=.014f;
+            nameplate.anchor=TextAnchor.MiddleCenter;nameplate.color=new Color(1,.85f,.55f);
+            nameplate.gameObject.SetActive(!IsOwner);
             transform.SetPositionAndRotation(
     RootPosition.Value,
     RootRotation.Value
@@ -188,6 +182,16 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
                 }
             }
             if (pose.IsValid()) ApplyVisuals(pose, IsOwner);
+            if(character!=null)
+            {
+                if(character.Choice!=CharacterChoice.Value)character.SetChoice(CharacterChoice.Value);
+                character.Pose(Head.position,Head.rotation,LeftHand.position,LeftHand.rotation,
+                    RightHand.position,RightHand.rotation,RootPosition.Value.y,IsOwner);
+                nameplate.text=(MatchController.Instance!=null?MatchController.Instance.PlayerLabel(OwnerClientId):"Player "+(OwnerClientId+1))+"\n"+TempleCharacter.Names[character.Choice];
+                nameplate.richText=false;
+                nameplate.transform.position=Head.position+Vector3.up*.46f;
+                if(rig!=null && rig.Head!=null)nameplate.transform.rotation=Quaternion.LookRotation(nameplate.transform.position-rig.Head.position);
+            }
         }
         void ApplyVisuals(AvatarPose pose, bool immediate)
         {
@@ -265,6 +269,43 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
             TrackedPose.Value = pose;
         }
 
+        double lastTurn = double.NegativeInfinity;
+        bool turnHeld;
+        public Vector3 HeadOffset
+        {
+            get
+            {
+                var offset = RootRotation.Value * TrackedPose.Value.Head;
+                offset.y = 0;
+                return offset;
+            }
+        }
+        void Update()
+        {
+            if (!IsSpawned || !IsOwner) return;
+            var rig = FoundationRig.Instance;
+            if (rig == null) return;
+            var right = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightHand);
+            Vector2 turn = Vector2.zero;
+            if (CanTeleport && rig.IsTracked && rig.RightTracked)
+                right.TryGetFeatureValue(UnityEngine.XR.CommonUsages.primary2DAxis, out turn);
+            // Locomotion is teleport-only; the left stick intentionally does not move the root.
+            if (Mathf.Abs(turn.x) < .3f) turnHeld = false;
+            if (!turnHeld && Mathf.Abs(turn.x) > .7f)
+            { turnHeld = true; SnapTurnRpc(turn.x > 0 ? 1 : -1); }
+        }
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Owner)]
+        void SnapTurnRpc(int direction, RpcParams rpc = default) => HandleSnapTurn(rpc.Receive.SenderClientId, direction);
+        internal void HandleSnapTurn(ulong sender, int direction)
+        {
+            if (!IsServer || sender != OwnerClientId || !CanTeleport ||
+                (direction != -1 && direction != 1) || NetworkManager.ServerTime.Time - lastTurn < .25) return;
+            lastTurn = NetworkManager.ServerTime.Time;
+            var pivot = RootPosition.Value + HeadOffset;
+            RootRotation.Value = Quaternion.AngleAxis(direction * 30, Vector3.up) * RootRotation.Value;
+            RootPosition.Value = pivot - HeadOffset;
+        }
+
         // =====================================================
         // NEW: MULTIPLAYER TELEPORTATION
         // =====================================================
@@ -340,7 +381,7 @@ FoundationSession.Instance?.RegisterAvatar(OwnerClientId);
             }
 
             // Validate the destination on the server.
-            if (!teleport.IsServerValidDestination(destination))
+            if (!teleport.IsServerValidDestination(destination + HeadOffset, this))
             {
                 Debug.LogWarning(
                     "Teleportation rejected: unsafe destination."

@@ -40,7 +40,7 @@ namespace CursedCrown
             GUILayout.Label("Target client ID (0-4)");
             TargetClientId = Mathf.RoundToInt(GUILayout.HorizontalSlider(TargetClientId, 0, 4));
 
-            if (GUILayout.Button("Apply one hit (-25 HP)"))
+            if (GUILayout.Button($"Apply one hit (-{GameRules.ShotDamage} HP)"))
                 ApplyTestHit();
 
             GUI.enabled = hasLastTestHit;

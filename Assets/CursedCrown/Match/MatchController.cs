@@ -1,6 +1,9 @@
 using System;
 using System.Linq;
 using Unity.Netcode;
+using Unity.Collections;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace CursedCrown
@@ -29,10 +32,11 @@ namespace CursedCrown
         {
             public ulong Id;
             public int Score;
+            public FixedString64Bytes Name;
             public bool Ready, Connected;
             public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
-            { s.SerializeValue(ref Id); s.SerializeValue(ref Score); s.SerializeValue(ref Ready); s.SerializeValue(ref Connected); }
-            public bool Equals(PlayerRow o) => Id == o.Id && Score == o.Score && Ready == o.Ready && Connected == o.Connected;
+            { s.SerializeValue(ref Id); s.SerializeValue(ref Name); s.SerializeValue(ref Score); s.SerializeValue(ref Ready); s.SerializeValue(ref Connected); }
+            public bool Equals(PlayerRow o) => Id == o.Id && Name.Equals(o.Name) && Score == o.Score && Ready == o.Ready && Connected == o.Connected;
         }
         [Min(1)] public float RoundSeconds = GameRules.MatchSeconds;
         [Tooltip("Sandbox only: allow crown pickup without Person 4's health service.")]
@@ -43,6 +47,39 @@ namespace CursedCrown
         readonly NetworkVariable<State> state = new();
         NetworkList<PlayerRow> rows;
         readonly CrownMatchRules rules = new();
+        readonly Dictionary<ulong,string> playerNames = new();
+        public static string CleanName(string input)
+        {
+            var result=new StringBuilder();
+            foreach(char c in input ?? "")
+            {
+                if(result.Length>=16)break;
+                if((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||c=='-'||c=='\''||c==' ')
+                    result.Append(c);
+            }
+            return string.Join(" ",result.ToString().Split(new[]{' '},StringSplitOptions.RemoveEmptyEntries));
+        }
+        public string PlayerName(ulong id)
+        {
+            if(rows!=null)foreach(var row in rows)if(row.Id==id && row.Name.Length>0)return row.Name.ToString();
+            return "Player "+(id+1);
+        }
+        public string PlayerLabel(ulong id)
+        {
+            string name=PlayerName(id);int count=0;
+            foreach(var row in rows)if(string.Equals(row.Name.ToString(),name,StringComparison.OrdinalIgnoreCase))count++;
+            return count>1?name+" #"+(id+1):name;
+        }
+        public void SetPlayerName(string name)
+        {if(IsSpawned)NameRpc(new FixedString64Bytes(CleanName(name)));}
+        [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+        void NameRpc(FixedString64Bytes name,RpcParams rpc=default) => HandlePlayerName(rpc.Receive.SenderClientId,name.ToString());
+        internal void HandlePlayerName(ulong sender,string name)
+        {
+            if(!IsServer || !IsSpawned || Phase!=MatchPhase.Lobby || !NetworkManager.ConnectedClients.ContainsKey(sender))return;
+            string clean=CleanName(name);if(clean.Length==0)return;
+            playerNames[sender]=clean;Publish();
+        }
         Vector3 droppedPosition;
         FoundationSession session;
         IPlayerState health;
@@ -104,8 +141,10 @@ namespace CursedCrown
         { if (rules.SetReady(rpc.Receive.SenderClientId, round, ready)) Publish(); }
         [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
         void PickupRpc(uint round, RpcParams rpc = default)
+        { HandlePickup(rpc.Receive.SenderClientId, round); }
+        internal void HandlePickup(ulong id, uint round)
         {
-            ulong id = rpc.Receive.SenderClientId;
+            if (!IsServer) return;
             if (round != RoundId || Phase != MatchPhase.Playing || rules.Carrier.HasValue || !IsAlive(id)) return;
             var avatar = FindAvatar(id);
             if (avatar == null || (!AllowDesktopPickup && !avatar.TrackedPose.Value.RightTracked)) return;
@@ -154,6 +193,7 @@ namespace CursedCrown
                 Carried = rules.Carrier.HasValue, Carrier = rules.Carrier.GetValueOrDefault(), CrownPosition = droppedPosition };
             var ordered = rules.Players.OrderBy(p => p.Key).ToArray();
             var next = ordered.Select(pair => new PlayerRow { Id = pair.Key,
+                Name = new FixedString64Bytes(playerNames.TryGetValue(pair.Key,out var name)?name:"Player "+(pair.Key+1)),
                 Ready = pair.Value.Ready, Score = pair.Value.Score, Connected = pair.Value.Connected }).ToArray();
             if (rows.Count == next.Length && next.Select((row, i) => rows[i].Equals(row)).All(equal => equal)) return;
             // A join can occur while NGO sends the initial full snapshot. Replace the
@@ -168,7 +208,7 @@ namespace CursedCrown
             int best = 0;
             foreach (var row in rows) best = Math.Max(best, row.Score);
             var names = new System.Collections.Generic.List<string>();
-            foreach (var row in rows) if (row.Score == best) names.Add("Player " + row.Id);
+            foreach (var row in rows) if (row.Score == best) names.Add(PlayerLabel(row.Id));
             string winners = string.Join(", ", names);
             return "Winner(s): " + winners;
         }

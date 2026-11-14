@@ -15,6 +15,23 @@ namespace CursedCrown.Editor
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
             var scene = EditorSceneManager.OpenScene("Assets/CursedCrown/Tests/Person2/Person2_Sandbox.unity");
+            // Preserve the roomier final layout when regenerating from Person 2's base scene.
+            GameObject.Find("Floor").transform.localScale = new Vector3(30, .2f, 30);
+            foreach (var name in new[] { "North Wall", "South Wall", "East Wall", "West Wall" })
+            {
+                var wall = GameObject.Find(name).transform;
+                var position = wall.localPosition;
+                wall.localPosition = new Vector3(position.x * 1.5f, position.y, position.z * 1.5f);
+                var scale = wall.localScale;
+                wall.localScale = new Vector3(scale.x > 1 ? 30 : scale.x, scale.y, scale.z > 1 ? 30 : scale.z);
+            }
+            for (int i = 1; i <= 5; i++)
+            {
+                var cover = GameObject.Find("Cover " + i).transform;
+                var position = cover.localPosition;
+                cover.localPosition = new Vector3(position.x * 1.5f, position.y, position.z * 1.5f);
+            }
+            Object.FindFirstObjectByType<ArenaTeleportation>().maxDistance = 25;
             var placeholder = GameObject.Find("Crown Visual Placeholder - Person 5 replaces");
             if (placeholder != null) placeholder.SetActive(false);
             var session = Object.FindFirstObjectByType<FoundationSession>();

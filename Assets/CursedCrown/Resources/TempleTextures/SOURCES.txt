@@ -1,0 +1,15 @@
+Real-world stone material scans from Poly Haven, licensed CC0.
+Downloaded 14 November 2026. Original 1K JPEG albedo, OpenGL normal and AO maps.
+Source file MD5 checksums verified against the Poly Haven asset API.
+
+Stone Block Wall: https://polyhaven.com/a/stone_block_wall
+Castle Wall Slates: https://polyhaven.com/a/castle_wall_slates
+Monastery Stone Floor: https://polyhaven.com/a/monastery_stone_floor
+Licence: https://polyhaven.com/license
+
+Unity imports normal maps as normals, albedo as sRGB, AO as linear;
+Android textures use ASTC 6x6, mipmaps, 1024-pixel maximum and 4x anisotropy.
+Temple architecture and crown meshes are authored in this project's ArenaArt.cs.
+
+Crown micro-surface normal only: https://polyhaven.com/a/metal_plate_02 (CC0).
+Applied at reduced strength to the authored gold material, without the steel albedo.

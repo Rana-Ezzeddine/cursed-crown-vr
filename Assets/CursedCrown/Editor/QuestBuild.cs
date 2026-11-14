@@ -11,7 +11,12 @@ namespace CursedCrown.Editor
     public static class QuestBuild
     {
         [MenuItem("Cursed Crown/Build Quest APK")]
-        public static void Build()
+        public static void Build() => BuildInternal(false);
+
+        [MenuItem("Cursed Crown/Build and Run Quest")]
+        public static void BuildAndRun() => BuildInternal(true);
+
+        static void BuildInternal(bool run)
         {
             // Build the saved final integration scene; do not regenerate teammates' work.
             var scene = EditorSceneManager.OpenScene(Person5ArenaSetup.Scene);
@@ -30,7 +35,7 @@ namespace CursedCrown.Editor
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions {
                 scenes = new[] { Person5ArenaSetup.Scene },
                 locationPathName = "Builds/Quest/TheCursedCrown.apk",
-                target = BuildTarget.Android, options = BuildOptions.Development });
+                target = BuildTarget.Android, options = BuildOptions.Development | (run ? BuildOptions.AutoRunPlayer : BuildOptions.None) });
             if (report.summary.result != BuildResult.Succeeded)
                 throw new InvalidOperationException("Quest build failed: " + report.summary.result);
             Debug.Log("CC_QUEST_APK_BUILD_PASS " + report.summary.totalSize);

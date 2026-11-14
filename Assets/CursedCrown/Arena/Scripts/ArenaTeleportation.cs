@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace CursedCrown
 {
+    [DefaultExecutionOrder(50)]
     public class ArenaTeleportation : MonoBehaviour
     {
         [Header("Player References")]
@@ -22,6 +23,10 @@ namespace CursedCrown
         private bool isAiming;
         private bool validDestination;
         private Vector3 targetPosition;
+        GameObject landingHints;
+        Mesh hintMesh;
+        Material hintMaterial;
+        public int LandingHintCount { get; private set; }
 
         void Start()
         {
@@ -120,22 +125,20 @@ namespace CursedCrown
 
             validDestination = false;
 
-            if (Physics.Raycast(
-                ray,
-                out RaycastHit hit,
-                maxDistance,
-                ~0,
-                QueryTriggerInteraction.Ignore))
+            var localPlayer = Unity.Netcode.NetworkManager.Singleton?.LocalClient?.PlayerObject;
+            var owner = localPlayer != null ? localPlayer.GetComponent<FoundationAvatar>() : null;
+            float nearest = maxDistance;
+            foreach (var hit in Physics.RaycastAll(ray, maxDistance, ~0, QueryTriggerInteraction.Ignore))
             {
+                if (IgnoreCollider(hit.collider, owner) || hit.distance >= nearest) continue;
+                nearest = hit.distance;
                 endPoint = hit.point;
-
-                if (hit.collider == arenaFloor &&
-                    IsDestinationClear(hit.point))
-                {
-                    validDestination = true;
-                    targetPosition = hit.point;
-                }
+                validDestination = hit.collider == arenaFloor && TryResolveLanding(hit.point, ray.origin, owner, out targetPosition);
+                if(validDestination)endPoint=targetPosition;
             }
+
+            if(landingHints==null)BuildLandingHints();
+            landingHints.SetActive(true);
 
             // Show aiming laser.
             if (teleportLine != null)
@@ -187,97 +190,111 @@ namespace CursedCrown
         // DESTINATION COLLISION VALIDATION
         // =====================================================
 
-        bool IsDestinationClear(Vector3 destination)
+        bool IgnoreCollider(Collider collider, FoundationAvatar owner)
         {
-            float radius = playerRadius * 0.95f;
+            if (owner != null && collider.transform.IsChildOf(owner.transform)) return true;
+            if (playerRig != null && collider.transform.IsChildOf(playerRig)) return true;
+            if (destinationMarker != null && collider.transform.IsChildOf(destinationMarker.transform)) return true;
+            // Runtime menu tiles and floor markings are not arena obstacles.
+            var presentation = collider.GetComponentInParent<MatchPresentation>();
+            if ((presentation != null && presentation.IsControlCollider(collider)) ||
+                collider.GetComponentInParent<FoundationWorldMenu>() != null) return true;
+            return collider != arenaFloor && collider.gameObject.name.StartsWith("Spawn Marker");
+        }
 
-            Vector3 capsuleBottom =
-                destination +
-                Vector3.up * (playerRadius + 0.05f);
-
-            Vector3 capsuleTop =
-                destination + Vector3.up * 1.65f;
-
-            Collider[] overlaps = Physics.OverlapCapsule(
-                capsuleBottom,
-                capsuleTop,
-                radius,
-                ~0,
-                QueryTriggerInteraction.Ignore
-            );
-
-            foreach (Collider obstacle in overlaps)
-            {
-                if (obstacle == arenaFloor)
-                    continue;
-
-                if (playerRig != null &&
-                    obstacle.transform.IsChildOf(playerRig))
-                    continue;
-
-                if (destinationMarker != null &&
-                    obstacle.transform.IsChildOf(
-                        destinationMarker.transform))
-                    continue;
-
-                return false;
-            }
-
+        bool IsDestinationClear(Vector3 destination, FoundationAvatar owner)
+        {
+            foreach (var obstacle in Physics.OverlapCapsule(
+                destination + Vector3.up * (playerRadius + .05f),
+                destination + Vector3.up * (1.8f - playerRadius),
+                playerRadius, ~0, QueryTriggerInteraction.Ignore))
+                if (obstacle != arenaFloor && !IgnoreCollider(obstacle, owner)) return false;
             return true;
         }
 
-        // =====================================================
-        // NEW: SERVER-SIDE DESTINATION VALIDATION
-        // =====================================================
-
-        // Called by FoundationAvatar on the server.
-        public bool IsServerValidDestination(Vector3 destination)
+        public bool IsServerValidDestination(Vector3 destination) => IsServerValidDestination(destination, null);
+        public bool IsServerValidDestination(Vector3 destination, FoundationAvatar owner)
         {
-            if (arenaFloor == null)
-                return false;
-
-            // Reject invalid coordinates.
-            if (float.IsNaN(destination.x) ||
-                float.IsNaN(destination.y) ||
-                float.IsNaN(destination.z) ||
-                float.IsInfinity(destination.x) ||
-                float.IsInfinity(destination.y) ||
-                float.IsInfinity(destination.z))
-            {
-                return false;
-            }
-
-            // Check that the destination is on the arena floor.
-            Vector3 rayStart =
-                destination + Vector3.up * 1f;
-
-            if (!Physics.Raycast(
-                rayStart,
-                Vector3.down,
-                out RaycastHit hit,
-                2f,
-                ~0,
-                QueryTriggerInteraction.Ignore))
-            {
-                return false;
-            }
-
-            if (hit.collider != arenaFloor)
-                return false;
-
-            // Ensure destination is close to floor height.
-            if (Vector3.Distance(
-                hit.point,
-                destination
-            ) > 0.15f)
-            {
-                return false;
-            }
-
-            // Reject obstacles and occupied destinations
-            // when those objects have detectable colliders.
-            return IsDestinationClear(hit.point);
+            if (arenaFloor == null || !Finite(destination)) return false;
+            // Query the actual floor, not a ray that can hit our own body or a menu.
+            if (!arenaFloor.Raycast(new Ray(destination + Vector3.up, Vector3.down), out var hit, 2) ||
+                Mathf.Abs(hit.point.y - destination.y) > .15f) return false;
+            return IsDestinationClear(hit.point, owner);
         }
+
+        // Forgive small aiming errors at the edge of cover, but never snap through a wall.
+        public bool TryResolveLanding(Vector3 point, Vector3 origin, FoundationAvatar owner, out Vector3 landing)
+        {
+            landing=point;
+            if(IsServerValidDestination(point,owner))return true;
+            for(int radius=1;radius<=3;radius++)
+                for(int i=0;i<12;i++)
+                {
+                    float angle=i*Mathf.PI/6;
+                    var candidate=point+new Vector3(Mathf.Cos(angle),0,Mathf.Sin(angle))*(radius*.25f);
+                    if(!IsServerValidDestination(candidate,owner) || Vector3.Distance(origin,candidate)>maxDistance)continue;
+                    var delta=candidate+Vector3.up*.025f-origin;
+                    bool blocked=false;
+                    foreach(var hit in Physics.RaycastAll(origin,delta.normalized,delta.magnitude,~0,QueryTriggerInteraction.Ignore))
+                        if(hit.collider!=arenaFloor && !IgnoreCollider(hit.collider,owner)){blocked=true;break;}
+                    if(blocked)continue;
+                    landing=candidate;return true;
+                }
+            return false;
+        }
+        public void BuildLandingHints()
+        {
+            if(landingHints!=null)return;
+            Physics.SyncTransforms();
+            var points=new System.Collections.Generic.List<Vector3>();
+            for(float x=-12;x<=12;x+=3)
+                for(float z=-12;z<=12;z+=3)
+                    points.Add(new Vector3(x,0,z));
+            // The coarse grid misses the pickup radius: provide close approaches on every side.
+            var crownCentre=MatchController.Instance!=null?MatchController.Instance.Pedestal:Vector3.zero;
+            crownCentre.y=arenaFloor.bounds.max.y;
+            for(int i=0;i<8;i++)
+            {
+                float angle=i*Mathf.PI/4;
+                float radius=i%2==0?1.15f:1.3f;
+                points.Add(crownCentre+new Vector3(Mathf.Sin(angle),0,Mathf.Cos(angle))*radius);
+            }
+            for(int side=0;side<4;side++)
+                foreach(var p in new[]{new Vector3(10,0,7),new Vector3(7,0,10),new Vector3(10,0,10),new Vector3(10,0,5.5f),new Vector3(5.5f,0,10)})
+                    points.Add(Quaternion.Euler(0,side*90,0)*p);
+            var vertices=new System.Collections.Generic.List<Vector3>();var triangles=new System.Collections.Generic.List<int>();
+            foreach(var p in points)
+            {
+                if(!IsServerValidDestination(p))continue;
+                LandingHintCount++;
+                for(int i=0;i<24;i++)
+                {
+                    int start=vertices.Count;
+                    float a=i*Mathf.PI/12,b=(i+1)*Mathf.PI/12;
+                    vertices.Add(p+new Vector3(Mathf.Sin(a)*.20f,.018f,Mathf.Cos(a)*.20f));
+                    vertices.Add(p+new Vector3(Mathf.Sin(a)*.17f,.018f,Mathf.Cos(a)*.17f));
+                    vertices.Add(p+new Vector3(Mathf.Sin(b)*.17f,.018f,Mathf.Cos(b)*.17f));
+                    vertices.Add(p+new Vector3(Mathf.Sin(b)*.20f,.018f,Mathf.Cos(b)*.20f));
+                    triangles.AddRange(new[]{start,start+1,start+2,start,start+2,start+3});
+                }
+            }
+            hintMesh=new Mesh {name="Teleport landing guidance"};hintMesh.SetVertices(vertices);hintMesh.SetTriangles(triangles,0);hintMesh.RecalculateNormals();
+            landingHints=new GameObject("Teleport landing hints",typeof(MeshFilter),typeof(MeshRenderer));
+            landingHints.GetComponent<MeshFilter>().sharedMesh=hintMesh;
+            var source=FindFirstObjectByType<MatchPresentation>()?.PanelMaterial;
+            if(source==null && teleportLine!=null)source=teleportLine.sharedMaterial;
+            hintMaterial=source!=null?new Material(source):new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            hintMaterial.color=new Color(.75f,.6f,.3f);
+            hintMaterial.SetFloat("_Cull",0);
+            landingHints.GetComponent<Renderer>().sharedMaterial=hintMaterial;
+            landingHints.GetComponent<Renderer>().shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;
+            landingHints.SetActive(false);
+        }
+        void OnDestroy()
+        {if(landingHints!=null)Destroy(landingHints);if(hintMesh!=null)Destroy(hintMesh);if(hintMaterial!=null)Destroy(hintMaterial);}
+
+        static bool Finite(Vector3 p) => !float.IsNaN(p.x) && !float.IsInfinity(p.x) &&
+            !float.IsNaN(p.y) && !float.IsInfinity(p.y) && !float.IsNaN(p.z) && !float.IsInfinity(p.z);
 
         // =====================================================
         // UPDATED: LOCAL + MULTIPLAYER TELEPORTATION
@@ -346,6 +363,7 @@ namespace CursedCrown
 
         void HideVisuals()
         {
+            if(landingHints!=null)landingHints.SetActive(false);
             if (teleportLine != null)
                 teleportLine.enabled = false;
 

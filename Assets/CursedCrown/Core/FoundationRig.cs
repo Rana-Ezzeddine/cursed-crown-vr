@@ -7,6 +7,7 @@ namespace CursedCrown
 {
     // Scene-local camera/input. Networked players contain only replicated visuals.
     // Persons 1/2 can replace this with an XRI rig without changing AvatarPose.
+    [DefaultExecutionOrder(-100)]
     public sealed class FoundationRig : MonoBehaviour
     {
         public static FoundationRig Instance { get; private set; }

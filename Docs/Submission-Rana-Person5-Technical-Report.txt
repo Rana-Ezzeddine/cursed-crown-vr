@@ -1,0 +1,40 @@
+Person 5 Technical Report
+Rana Ezzeddine | Person 5 | CMPS297AG
+
+Chapter 5 – Person 5: Crown and Match Management
+Rana Ezzeddine
+
+5.1 Scope and responsibilities
+My core responsibility was crown ownership/scoring and the match lifecycle: readiness, start, timer, results and restart. With substantial ChatGPT/Codex assistance, I implemented and refined these features, integrated them with teammates’ systems, and directed later UI and presentation improvements on integration/final-game.
+
+5.2 Gameplay rules
+Round: 240 seconds; all connected players must be ready, and only the host starts or restarts. Solo starts are supported for development.
+Scoring: one point per completed second of continuous crown possession; no kill points. Each new possession starts a fresh whole-second counter. Scores survive death and reset on restart. Highest score wins; tied leaders share victory.
+Pickup: right grip, tracked hand within one metre, clear reach, alive player, correct round and Playing phase. The host rejects blocked/inside-wall requests and accepts only one carrier. Carrier death/disconnect releases the crown at a safe location, with pedestal fallback. No direct theft from living carriers, manual dropping or throwing.
+Integrated combat settings: 100 health, 10 damage per hit, 10 shots, two-second recharge and five-second respawn when a safe spawn is available.
+
+5.3 Architecture and integration
+CrownMatchRules and MatchClock implement rules and timing. MatchController validates client RPC requests and publishes the authoritative phase, deadline, round ID, crown state and player roster (name, score, readiness and connection status). Clients use the shared server deadline; round IDs reject stale requests, and serial host processing resolves competing pickups.
+Person5HealthBridge connects match/round events with health. My integration consumes Person 1’s sessions/avatars, Person 2’s spawn/safe-drop services, Person 3’s validated hits and Person 4’s health/respawn. Their original implementations remain their contributions. Host departure ends the session; host migration is not supported.
+
+5.4 Presentation and later improvements
+MatchPresentation provides highlighted controller-operated buttons, hides lobby controls during play and displays the final Hall of Champions. HealthHUD shows vitality, timer, crown status, points and charge/recharge guidance.
+Lobby names: controller keyboard, up to 16 permitted characters, host validation and lobby-only changes. Names persist in results after disconnect; duplicates receive identifying suffixes. The leaderboard sorts points and shares ranks for ties.
+Characters and environment: five replicated cosmetic character choices with tracked head/hands and approximated bodies; unchanged hitboxes. Temple/crown styling extends the existing arena. Headset feedback guided clearer UI, teleport-only movement with snap turning, additional landing guidance and reachable crown approaches.
+
+5.5 Verification and limitations
+Latest evidence: 82 production-scene Unity checks passed, covering controller-ray name saving with simulated poses, name/phase guards, teleport/crown access, round transitions and leaderboard fixtures. UI renders were inspected. On 14 November 2026, Unity built, installed and launched the APK on Quest 2; the immediate checked startup error log was empty.
+Historical evidence: 1,010 clock assertions, 536 crown/match assertions, five-process desktop tests, a full 240-second round and real PlayerHealth integration checks; see Docs/PERSON5_VERIFICATION.md for versions and limits.
+Remaining acceptance: five physical headsets with mixed Quest 2/3, simultaneous combat, headset disconnect behavior and measured Quest 2 performance. Desktop tests and sample leaderboard scores do not certify these. LAN is the documented route; Relay requires service configuration and separate verification.
+
+5.6 Sources and AI disclosure
+Starting material: my earlier assignment’s XR/OpenXR configuration and the team foundation. ChatGPT/Codex generated and revised substantial code, tests and documentation. I supplied requirements, reviewed behavior, provided headset feedback and directed corrections; I do not claim unaided implementation. Verification combined code inspection, automated checks, Unity builds, rendered previews and headset observations.
+Unity packages retain their respective licenses. Poly Haven CC0 textures are Stone Block Wall, Castle Wall Slates, Monastery Stone Floor and the Metal Plate 02 normal map; exact links are in Assets/CursedCrown/Resources/TempleTextures/SOURCES.txt. Temple/crown geometry, characters and UI decoration are procedural; the font is Unity’s built-in runtime font. My separate contribution statement gives the full attribution and covers only my work.
+
+5.7 Interface examples
+Figure 5.1. Lobby name entry and match controls (Unity-rendered UI test).
+Image: SubmissionFigures/Name-entry.png
+
+Figure 5.2. Named leaderboard with tied winners (UI test with sample scores).
+Image: SubmissionFigures/Leaderboard.png
+

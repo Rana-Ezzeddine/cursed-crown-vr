@@ -20,3 +20,20 @@ Person 4 dependency: PlayerHealth.cs and its metadata were imported byte-for-byt
 
 
 P4/P3/P5 integration note: `feature/p4-final-integration` adds P3's `NetworkGun` and `GunEffects` to the existing production `FoundationPlayer`, and attaches `Person4MatchHealthIntegration` to the P5 arena match prefab. The bridge forwards host-validated P3 hits through `Person5HealthBridge` to the unchanged P4 `PlayerHealth`, synchronizes gun/health round IDs with `MatchController.RoundId`, and reports player deaths to the match. It deliberately does not implement `ISpawnService`; P2's existing `ArenaMatchServices` remains the production service. The final combined branch still requires a fresh two-client Unity run before merge.
+
+November 2026 character-selection addition (Rana-requested, Codex-assisted):
+`TempleCharacter.cs` generates five stylized humanoid temple characters from Unity
+primitive meshes, with original procedural arrangement/materials and no external
+character assets. `FoundationAvatar` synchronizes a host-validated cosmetic choice;
+`MatchPresentation` provides lobby selection and a preview. These additions extend
+the team's existing player/networking work rather than replacing its authorship.
+Heads/hands follow tracked poses; limbs are approximated. Multi-headset visual and
+late-join acceptance testing remains necessary. See UNITY_HEADSET_BUILD.md.
+
+Rana-requested UI/name update, Codex-assisted: original procedural obsidian/gold
+menu decoration (`TempleUi`), in-world name keyboard, host-validated replicated
+player names in match rows, named avatar/HUD labels and ranked/tied final results.
+No external UI art/font assets were introduced; the built-in Unity runtime font
+is reused. Automated Unity tests exercise name validation, actual controller-ray
+save, phase restrictions and a five-row leaderboard fixture. The fixture is not
+evidence of five connected headsets; multi-headset acceptance remains pending.

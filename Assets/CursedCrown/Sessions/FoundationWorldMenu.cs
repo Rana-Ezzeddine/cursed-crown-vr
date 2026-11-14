@@ -5,11 +5,13 @@ using UnityEngine;
 namespace CursedCrown
 {
     // Runtime-created controls work in existing Arena and sandbox scenes without rewiring.
+    [DefaultExecutionOrder(200)]
     public sealed class FoundationWorldMenu : MonoBehaviour
     {
         public FoundationSession Session;
         public Material MenuMaterial;
         TextMesh status, entry;
+        Material textMaterial;
         string relayCode = "", lanAddress = "";
         bool editingAddress, connectedMenu, wasConnected;
         sealed class Button
@@ -17,6 +19,7 @@ namespace CursedCrown
             public Action Invoke;
             public Func<bool> Enabled;
             public Material Material;
+            public TextMesh Text; public float PressedUntil;
         }
         readonly Dictionary<Collider, Button> actions = new();
         readonly List<Material> materials = new();
@@ -26,6 +29,11 @@ namespace CursedCrown
 
         void Start()
         {
+            textMaterial=TempleUi.Material(materials,TempleUi.Ivory,4003);
+            textMaterial.SetFloat("_AlphaOnly",1);
+            textMaterial.mainTexture=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf").material.mainTexture;
+            Font.textureRebuilt+=RefreshFont;
+            TempleUi.Frame(transform,new Vector2(0,.12f),new Vector2(2.12f,2.5f),materials);
             status = Label("Status", new Vector3(0, 1.12f, 0), .035f);
             entry = Label("Entry", new Vector3(0, .74f, 0), .04f);
             Tile("HOST LAN", new Vector3(-.72f, .5f, 0), () => Session.StartLan(true), () => Session.CanStart, .45f);
@@ -50,10 +58,10 @@ namespace CursedCrown
                 () => Session.CanStart, .68f);
             Label("Help", new Vector3(0, -1f, 0), .025f).text = "RIGHT TRIGGER: SELECT   |   B: HIDE/SHOW WHEN CONNECTED";
             panelRenderers = GetComponentsInChildren<Renderer>();
-            panelColliders = GetComponentsInChildren<Collider>();
+            panelColliders = new List<Collider>(actions.Keys).ToArray();
             pointer = new GameObject("Controller Menu Ray").AddComponent<LineRenderer>();
             pointer.startWidth = .004f; pointer.endWidth = .002f; pointer.positionCount = 2;
-            var rayMaterial = new Material(MenuMaterial) { color = Color.cyan };
+            var rayMaterial = new Material(MenuMaterial) { color = TempleUi.Gold };
             materials.Add(rayMaterial); pointer.sharedMaterial = rayMaterial;
         }
 
@@ -88,8 +96,9 @@ namespace CursedCrown
             if (pointer.enabled)
             {
                 var aim = new Ray(rig.RightHand.position, rig.RightHand.forward);
-                var endPoint = Physics.Raycast(aim, out var aimHit, 8)
-                    ? aimHit.point : aim.GetPoint(8);
+                var matchMenu = FindFirstObjectByType<MatchPresentation>();
+                var endPoint = !visible && matchMenu != null && matchMenu.TryGetButtonHit(aim, out var menuHit)
+                    ? menuHit.point : Physics.Raycast(aim, out var aimHit, 8) ? aimHit.point : aim.GetPoint(8);
                 pointer.SetPosition(0, aim.origin);
                 pointer.SetPosition(1, endPoint);
             }
@@ -99,18 +108,34 @@ namespace CursedCrown
             entry.text = !string.IsNullOrEmpty(Session.JoinCode) ? "HOST CODE: " + Session.JoinCode :
                 (editingAddress ? "HOST IPv4: " + lanAddress : "JOIN CODE: " + relayCode);
             foreach (var button in actions.Values)
-                button.Material.color = button.Enabled() ? new Color(.07f, .18f, .23f) : new Color(.07f, .07f, .08f);
+            {
+                button.Material.color = Time.unscaledTime<button.PressedUntil?TempleUi.Gold:button.Enabled()?TempleUi.Button:new Color(.08f,.07f,.06f);
+                button.Text.color=button.Enabled()?TempleUi.Ivory:TempleUi.Muted;
+            }
             var hand = rig.RightHand;
             var ray = new Ray(hand.position, hand.forward);
             Vector3 end = ray.GetPoint(8);
-            if (Physics.Raycast(ray, out var hit, 8) && actions.TryGetValue(hit.collider, out var action))
+            if (TryHit(ray, out var hit) && actions.TryGetValue(hit.collider, out var action))
             {
                 end = hit.point;
-                if (rig.RightTracked && rig.TriggerPressed && action.Enabled()) action.Invoke();
+                if(action.Enabled())action.Material.color=TempleUi.Gold;
+                if (rig.RightTracked && rig.TriggerPressed && action.Enabled())
+                {
+                    action.PressedUntil=Time.unscaledTime+.18f;action.Invoke();
+                    var controller=UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightHand);
+                    if(controller.TryGetHapticCapabilities(out var caps)&&caps.supportsImpulse)controller.SendHapticImpulse(0,.25f,.05f);
+                }
             }
             pointer.SetPosition(0, ray.origin); pointer.SetPosition(1, end);
         }
 
+        bool TryHit(Ray ray,out RaycastHit hit)
+        {
+            Physics.SyncTransforms();hit=default;float nearest=8;bool found=false;
+            foreach(var collider in actions.Keys)if(collider.enabled && collider.Raycast(ray,out var candidate,nearest))
+            {hit=candidate;nearest=candidate.distance;found=true;}return found;
+        }
+        void RefreshFont(Font font){if(textMaterial!=null)textMaterial.mainTexture=font.material.mainTexture;}
         static string Wrap(string value, int length)
         {
             if (value.Length <= length) return value;
@@ -123,9 +148,9 @@ namespace CursedCrown
             var go = new GameObject(name);
             go.transform.SetParent(transform, false); go.transform.localPosition = position + Vector3.back * .035f;
             var text = go.AddComponent<TextMesh>(); text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.GetComponent<Renderer>().sharedMaterial = text.font.material;
+            text.GetComponent<Renderer>().sharedMaterial = textMaterial;
             text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center;
-            text.fontSize = 64; text.characterSize = size * .12f; text.color = Color.white;
+            text.fontSize = 128; text.characterSize = size * .12f; text.color = TempleUi.Ivory;
             return text;
         }
         void Tile(string text, Vector3 position, Action action, Func<bool> enabled, float width)
@@ -133,13 +158,14 @@ namespace CursedCrown
             var tile = GameObject.CreatePrimitive(PrimitiveType.Cube); tile.name = text;
             tile.transform.SetParent(transform, false); tile.transform.localPosition = position;
             tile.transform.localScale = new Vector3(width, .15f, .04f);
-            var material = new Material(MenuMaterial); materials.Add(material);
+            var material = TempleUi.Material(materials,TempleUi.Button,4002,true);
             tile.GetComponent<Renderer>().sharedMaterial = material;
-            actions.Add(tile.GetComponent<Collider>(), new Button { Invoke = action, Enabled = enabled, Material = material });
-            Label(text, position, .025f).text = text;
+            var caption=Label(text, position, .025f);caption.text=text;
+            actions.Add(tile.GetComponent<Collider>(), new Button { Invoke = action, Enabled = enabled, Material = material, Text=caption });
         }
         void OnDestroy()
         {
+            Font.textureRebuilt-=RefreshFont;
             if (pointer != null) Destroy(pointer.gameObject);
             foreach (var material in materials) Destroy(material);
         }

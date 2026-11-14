@@ -1,0 +1,39 @@
+Build, Setup and Join Instructions
+Rana Ezzeddine | Person 5 | CMPS297AG
+
+Submission contents
+This package is prepared for CMPS297AG, The Cursed Crown VR, on 14 November 2026. It contains a current Unity source snapshot, the installable Quest APK, exact dependency manifests, setup/join instructions, Rana Ezzeddine’s Person 5 contribution statement and a local copy of her technical-report chapter. The shared technical report is at https://docs.google.com/document/d/1xIsqXZVTOArkZlcfHuKAKcwm42MwZ3uXsMFnzHkFos4 .
+Repository: https://github.com/Rana-Ezzeddine/cursed-crown-vr ; branch: integration/final-game. The included source ZIP captures local changes beyond base commit e6287de73f953039efe3c5fdf04a4067e1df9ae3. That commit alone does not reproduce the current game. Use the included ZIP for this submission unless the matching changes have subsequently been pushed. SHA256SUMS.txt identifies the delivered files.
+
+1. Exact environment
+Unity Editor 6000.6.2f1 (770e33f6875c), with Android Build Support and Unity’s bundled Android SDK, NDK and OpenJDK. Runtime: ARM64, IL2CPP, OpenXR; package com.cursedcrown.vr; application version 1.0, version code 1; minimum Android API 32, target API 34. This is a development/demo APK, not a store release.
+Core manifest versions: Netcode for GameObjects 2.13.2; Multiplayer Services 2.3.2; Input System 1.20.0; URP 17.6.0; XR Interaction Toolkit 3.6.1; OpenXR 1.18.0; XR Management 4.7.0; Meta OpenXR 2.6.1; XR Core Utilities 2.6.0; XR Hands 1.9.0; AR Foundation 6.6.2. packages-lock.json and package-versions.json contain the complete resolved dependency set, including transitive packages. Do not independently upgrade packages for reproduction.
+
+2. Open the submitted Unity project
+1. Extract UnitySource.zip to a normal local folder outside cloud-sync directories. The project root is CursedCrown-UnitySource, containing Assets, Packages and ProjectSettings.
+2. Add that folder in Unity Hub and open it with the exact Editor version above. Allow packages and imported assets to resolve. Library, Temp, Logs, user settings and personal cloud associations are intentionally excluded and will be regenerated.
+3. Open Assets/CursedCrown/Tests/Person5/Person5_ArenaIntegration.unity. This is the final production scene and the only enabled build scene. Do not use the older Arena or individual sandbox scenes for the final demonstration. Do not run Generate Foundation, which can replace shared assets.
+4. Keep the committed package manifest and lockfile. Personal Unity services associations are omitted; LAN does not require them. Relay requires your own linked Unity services project and separate testing.
+
+3. Build and run from Unity
+1. Use a Quest with Developer Mode enabled by its authorized administrator. Connect it with a USB data cable, unlock/wear it and accept Allow USB debugging. A university-managed headset may require the device administrator to enable development access.
+2. In Unity’s Build Profiles, select Android and switch platform if necessary. Confirm the final integration scene is enabled and the Quest is available as the run device.
+3. Choose Cursed Crown > Build and Run Quest. This command validates the production match wiring, builds an ARM64 IL2CPP development APK and uses Unity’s AutoRunPlayer option to install and launch it. It avoids the macOS save dialog that stalled during preparation.
+4. The generated file is Builds/Quest/TheCursedCrown.apk. Standard File > Build And Run also works when its save dialog is responsive; use the same final scene and Android target.
+5. For installation without rebuilding, use the included Quest/TheCursedCrown.apk. With Android platform tools and an authorized device, run: adb install -r TheCursedCrown.apk . Launch The Cursed Crown from the headset’s installed/Unknown Sources library. The APK includes its data; no separate OBB is supplied or required.
+
+4. Join the same LAN match
+1. Put all headsets on the same reachable Wi-Fi/local network. Use a network that allows devices to communicate on UDP port 7777; guest/university client isolation can prevent joining even when internet access works. Keep Quest boundaries enabled and provide separate, clear physical play areas.
+2. On one headset, press Host LAN. Find that headset’s local IPv4 address in its connected Wi-Fi network details. With USB debugging, adb shell ip -4 addr show wlan0 can also identify it. Use the headset’s address, not the Mac’s, when the headset is hosting.
+3. On every other headset, select EDIT IP, clear/type the host IPv4 address using the in-game keypad, then press JOIN LAN. Do not use 127.0.0.1 between different devices. Up to five players, including the host, can join.
+4. In the lobby, choose NAME, enter a name and select SAVE NAME. Choose a character with the character-name button. Every player presses Ready; the host presses Start. All devices must run the same submitted build.
+5. A round lasts four minutes. Results appear at its end; the host chooses Play Again to return to the lobby. If the host leaves, the session ends; there is no host migration. B toggles the connection menu, which contains Leave/Cancel.
+
+5. Controls and rules
+Right trigger: select UI controls; fire the laser during play. Right A: hold to aim at valid floor and release to teleport. Right thumbstick: snap turn. Right grip: claim an available crown within one metre of the tracked hand and with clear reach. Left Y: recharge. Right B: show/hide the connection menu. There is no continuous thumbstick walking.
+Each accepted hit removes 10 of 100 health. The weapon holds 10 shots and takes two seconds to recharge. Death prevents actions and schedules a five-second respawn when a safe spawn is available. Defeating the crown carrier makes the crown available at a safe drop location. Holding it awards one point per completed second; kills award no points. Scores survive death, highest score wins and ties share victory. The host’s restart resets scores and the round.
+
+6. Verification and submission notes
+The final production-scene automated run passed 82 Unity checks using a local host and simulated poses. Coverage includes controller-ray name saving, validation and phase restrictions, crown/teleport access, round transitions and leaderboard fixtures. Historical Person 5 desktop/health tests are separately versioned in Docs; they are not final five-headset certification. The APK was built by Unity, installed on Quest 2 and launched on 14 November 2026; its immediate checked startup error log was empty.
+Record actual five-headset mixed Quest 2/Quest 3, simultaneous-firing, disconnect and performance results before claiming those tests passed. The leaderboard preview uses synthetic scores.
+Email subject required by the assignment: CMPS297AG_final_project. Submit the source ZIP, APK and documentation together, plus the completed team technical report. Rana’s contribution statement covers only Rana; the other members must supply their own disclosures. The complete team submission should also include the other members’ report sections, individual disclosures and final recorded test results.
